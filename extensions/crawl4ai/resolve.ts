@@ -87,7 +87,10 @@ export function getCrawl4AiDomainSlug(url: string): string {
 	try {
 		const parsed = new URL(url);
 		const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
-		return slugifyForFileName(host, "unknown-domain");
+		return host
+			.replace(/[^a-z0-9.-]+/g, "-")
+			.replace(/-+/g, "-")
+			.replace(/^-+|-+$/g, "") || "unknown-domain";
 	} catch {
 		return slugifyForFileName(url, "unknown-domain");
 	}
