@@ -1,0 +1,7 @@
+{
+  "name": "pi-crawl4ai",
+  "keywords": ["crawl4ai", "web crawling", "data extraction", "AI-powered crawling"],
+  "pi": {
+    "extensions": ["./crawl4ai.ts"]
+  }
+}
