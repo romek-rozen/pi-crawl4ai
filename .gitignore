@@ -1,4 +1,4 @@
-.pi/extensions/crawl4ai/.venv/
 .crawl4ai/
 node_modules/
 .DS_Store
+*.log

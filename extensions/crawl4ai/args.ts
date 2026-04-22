@@ -17,6 +17,7 @@ export function buildArgs(params: CrawlParamsType): string[] {
 	if (params.question) args.push("-q", params.question);
 	if (params.json_extract) args.push("-j", params.json_extract);
 	if (params.schema_path) args.push("-s", params.schema_path);
+	if (params.extraction_config) args.push("-e", params.extraction_config);
 	if (params.browser_config) args.push("-b", params.browser_config);
 
 	// Crawl4AI CLI domyślnie startuje z cache_mode=BYPASS.

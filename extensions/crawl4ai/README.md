@@ -1,6 +1,6 @@
 # crawl4ai Extension for pi
 
-Integrates [Crawl4AI](https://github.com/unclecode/crawl4ai) — open-source LLM-friendly web crawler — as a custom pi tool for any pi workspace.
+Integrates [Crawl4AI](https://github.com/unclecode/crawl4ai) — open-source LLM-friendly web crawler — as a custom pi tool for the `team-seo` workspace.
 
 ## Quick Start
 
@@ -10,7 +10,6 @@ Integrates [Crawl4AI](https://github.com/unclecode/crawl4ai) — open-source LLM
    ```
    This creates a Python venv inside `.pi/extensions/crawl4ai/.venv` and installs `crawl4ai`.
    The crawler uses the project-local `.crawl4ai/` folder by default (via `CRAWL4_AI_BASE_DIRECTORY`).
-   If you cloned this repo, keep the `.pi/` folder at the workspace root so pi can discover the extension.
 
 2. **Verify**:
    ```
@@ -69,7 +68,7 @@ If you want `json_extract` or `schema_path` to work, configure an LLM provider i
 
 By default the extension sets `CRAWL4_AI_BASE_DIRECTORY` to the current project root so Crawl4AI can reuse the project-local `.crawl4ai/` cache.
 The tool also forces `cache_mode=enabled` unless you explicitly pass `bypass_cache: true` or your own `crawler_config`.
-Full crawl outputs are written to `.crawl4ai/outputs/<domain>/<format>/`, with the domain slug preserving dots and removing `www.`.
+Full crawl outputs are written to `.crawl4ai/outputs/<domain>/<format>/` unless you pass `output_file`.
 The inline response only points to the saved file path; use `read` to inspect content.
 
 ## Troubleshooting

@@ -35,9 +35,10 @@ export const crawlToolMeta = {
 	promptGuidelines: [
 		"Use crawl4ai when the user wants to scrape, crawl, or extract content from a live website.",
 		"Full output is saved to disk in ./.crawl4ai/outputs/<domain>/<format>/.",
-		"Prefer markdown output for reading content; use json_extract or schema_path for structured data extraction (requires LLM provider configured in crawl4ai).",
-		"Do not use output_format=json without json_extract or schema_path; return a clear error instead.",
-		"Set deep_crawl + max_pages for crawling multiple linked pages.",
+		"Prefer markdown output for reading content; use json_extract or schema_path for structured data extraction.",
+		"json output requires extraction: use json_extract (LLM) or schema_path + extraction_config (CSS/XPath).",
+		"Do not use output_format=json without an extraction strategy; return a clear error instead.",
+		"Set deep_crawl + max_pages for crawling multiple linked pages (markdown/all only).",
 		"Set output_file to save to a specific path instead of the default project output location.",
 	],
 	parameters: CrawlParams,
@@ -64,15 +65,59 @@ async function saveToProjectOutput(
 
 /** Główna funkcja wykonawcza toola. */
 function validateCrawlRequest(params: CrawlParamsType): string | null {
-	if (params.output_format !== "json") return null;
+	if (params.output_format === "json") {
+		const hasLlmExtraction = Boolean(params.json_extract?.trim());
+		const hasSchemaExtraction = Boolean(params.schema_path?.trim() && params.extraction_config?.trim());
+		if (!hasLlmExtraction && !hasSchemaExtraction) {
+			return (
+				"output_format=json requires an extraction strategy. " +
+				"Use json_extract (LLM) or schema_path + extraction_config (CSS/XPath). " +
+				"Example extraction_config YAML:\n" +
+				"type: json-css\nparams:\n  verbose: true"
+			);
+		}
+		if (params.deep_crawl) {
+			return (
+				"output_format=json with deep_crawl is not supported by Crawl4AI. " +
+				"Use markdown output for deep crawls, or crawl a single page with JSON extraction."
+			);
+		}
+	}
+	return null;
+}
 
-	const hasExtraction = Boolean(params.json_extract?.trim() || params.schema_path?.trim());
-	if (hasExtraction) return null;
+function formatErrorOutput(result: { stdout: string; stderr: string; exitCode: number | null }): string {
+	let msg = `[crawl4ai] Exited with code ${result.exitCode}.`;
 
-	return (
-		"output_format=json requires json_extract or schema_path. " +
-		"Use markdown/md-fit if you only want readable page content."
-	);
+	const stderr = result.stderr?.trim();
+	const stdout = result.stdout?.trim();
+
+	if (stderr) {
+		msg += `\n\nSTDERR:\n${stderr}`;
+	}
+	if (stdout) {
+		const preview = stdout.length > 2000 ? stdout.slice(0, 2000) + "\n… (truncated)" : stdout;
+		msg += `\n\nSTDOUT:\n${preview}`;
+	}
+	if (!stderr && !stdout) {
+		msg += "\n\nNo output captured.";
+	}
+
+	// Detect known Crawl4AI issues and add hints
+	if (stdout?.includes("No default LLM provider configured")) {
+		msg +=
+			"\n\nHint: JSON/LLM extraction requires a configured LLM provider in Crawl4AI. " +
+			"Run `crwl` interactively once to set it up, or create ~/.crawl4ai/global.yml. " +
+			"See https://docs.crawl4ai.com for provider setup.";
+	}
+	if (stdout?.includes("the JSON object must be str, bytes or bytearray, not NoneType")) {
+		msg +=
+			"\n\nHint: Crawl4AI failed to produce JSON output. " +
+			"This usually means extraction config is missing or the page has no matching content. " +
+			"For schema_path, make sure you also pass extraction_config (e.g. a YAML with type: json-css).";
+	}
+
+	return msg;
 }
 
 export async function executeCrawl(
@@ -121,12 +166,12 @@ export async function executeCrawl(
 		args,
 		exitCode: result.exitCode,
 		stderr: result.stderr || undefined,
+		stdoutPreview: result.stdout?.slice(0, 500) || undefined,
 	};
 
 	// Niezerowy exit code
 	if (result.exitCode !== 0) {
-		const msg =
-			`[crawl4ai] Exited with code ${result.exitCode}.\n\nSTDERR:\n${result.stderr || "(empty)"}`;
+		const msg = formatErrorOutput(result);
 		return { content: [{ type: "text", text: msg }], details, isError: true };
 	}
 

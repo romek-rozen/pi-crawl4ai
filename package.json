@@ -1,0 +1,17 @@
+{
+  "name": "pi-crawl4ai",
+  "version": "1.0.0",
+  "description": "Crawl4AI extension for pi — web crawling and structured extraction",
+  "keywords": ["pi-package", "crawl4ai", "web-crawling", "data-extraction"],
+  "license": "MIT",
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-ai": "*",
+    "@mariozechner/pi-tui": "*",
+    "typebox": "*"
+  },
+  "pi": {
+    "extensions": ["./extensions/crawl4ai"],
+    "prompts": ["./prompts"]
+  }
+}

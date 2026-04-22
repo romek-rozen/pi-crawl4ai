@@ -7,7 +7,7 @@
 import { StringEnum } from "@mariozechner/pi-ai";
 import { Type } from "typebox";
 
-/** Parametry toola `crawl4ai` — mapują się 1:1 na flagi CLI `crwl crawl`. */
+/** Parametry toola `crawl4ai` — mapują się na flagi CLI `crwl crawl`. */
 export const CrawlParams = Type.Object({
 	url: Type.String({ description: "URL to crawl" }),
 	output_format: Type.Optional(
@@ -31,7 +31,13 @@ export const CrawlParams = Type.Object({
 	schema_path: Type.Optional(
 		Type.String({
 			description:
-				"Path to JSON schema file for structured extraction. Requires LLM provider in crawl4ai.",
+				"Path to JSON schema file for structured extraction. Requires extraction_config.",
+		}),
+	),
+	extraction_config: Type.Optional(
+		Type.String({
+			description:
+				"Extraction strategy config file (YAML/JSON). Required for schema_path.",
 		}),
 	),
 	browser_config: Type.Optional(
@@ -71,4 +77,5 @@ export interface CrawlDetails {
 	fullOutputPath?: string;
 	outputFile?: string;
 	stderr?: string;
+	stdoutPreview?: string;
 }
