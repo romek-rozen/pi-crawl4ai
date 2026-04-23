@@ -1,6 +1,6 @@
 # crawl4ai Extension for pi
 
-Integrates [Crawl4AI](https://github.com/unclecode/crawl4ai) — open-source LLM-friendly web crawler — as a custom pi tool for the `team-seo` workspace.
+Integrates [Crawl4AI](https://github.com/unclecode/crawl4ai) — open-source LLM-friendly web crawler — as a custom pi tool for any pi workspace.
 
 ## Quick Start
 
