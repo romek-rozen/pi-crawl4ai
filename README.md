@@ -1,5 +1,8 @@
 # pi-crawl4ai
 
+[![Built with Crawl4AI](https://img.shields.io/badge/Built%20with-Crawl4AI-blue)](https://github.com/unclecode/crawl4ai)
+[![Built for pi](https://img.shields.io/badge/Built%20for-pi-green)](https://github.com/mariozechner/pi)
+
 A production-ready [pi](https://github.com/mariozechner/pi) package that integrates [Crawl4AI](https://github.com/unclecode/crawl4ai) — an open-source LLM-friendly web crawler — as a custom tool and agent prompt.
 
 ## Install
