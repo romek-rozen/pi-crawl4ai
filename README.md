@@ -1,5 +1,7 @@
 # pi-crawl4ai
 
+[![npm](https://img.shields.io/npm/v/pi-crawl4ai)](https://www.npmjs.com/package/pi-crawl4ai)
+[![GitHub](https://img.shields.io/github/license/romek-rozen/pi-crawl4ai)](https://github.com/romek-rozen/pi-crawl4ai)
 [![Built with Crawl4AI](https://img.shields.io/badge/Built%20with-Crawl4AI-blue)](https://github.com/unclecode/crawl4ai)
 [![Built for pi](https://img.shields.io/badge/Built%20for-pi-green)](https://github.com/mariozechner/pi)
 
@@ -178,6 +180,11 @@ The extension runs inside pi’s extension loader. After modifying source, reloa
 - **"the JSON object must be str, bytes or bytearray, not NoneType"** → usually missing `extraction_config` when using `schema_path`, or the page has no matching content
 - **Stale cache** → run `/crawl4ai-clear-cache`
 - **Timeouts** → increase `timeout` param for slow sites
+
+## Links
+
+- **npm**: https://www.npmjs.com/package/pi-crawl4ai
+- **GitHub**: https://github.com/romek-rozen/pi-crawl4ai
 
 ## License
 
