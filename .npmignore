@@ -1,0 +1,14 @@
+# Development
+.git/
+.github/
+.crawl4ai/
+node_modules/
+
+# Config & metadata
+.gitignore
+.DS_Store
+AGENTS.md
+extensions/crawl4ai/AGENTS.md
+
+# Logs
+*.log

@@ -1,8 +1,8 @@
 /**
  * resolve.ts
  *
- * Logika wykrywania binarki `crwl`, przygotowania środowiska uruchomieniowego
- * oraz budowania ścieżek cache/output dla Crawl4AI.
+ * Logic for detecting the `crwl` binary, preparing the runtime environment,
+ * and building cache/output paths for Crawl4AI.
  */
 
 import { existsSync } from "node:fs";
@@ -11,46 +11,46 @@ import { dirname, join, parse } from "node:path";
 import { createHash } from "node:crypto";
 import { execSync } from "node:child_process";
 
-/** Szuka binarki `crwl` w kilku znanych lokalizacjach. */
+/** Searches for the `crwl` binary in several known locations. */
 export function findCrwl(cwd: string): string | null {
-	// 1. Nadpisanie przez zmienną środowiskową
+	// 1. Override via environment variable
 	if (process.env.CRAWL4AI_VENV) {
 		const p = join(process.env.CRAWL4AI_VENV, "bin", "crwl");
 		if (existsSync(p)) return p;
 	}
 
-	// 2. Lokalny venv wewnątrz projektu (priorytet)
+	// 2. Local venv inside the project (priority)
 	const projectVenv = join(cwd, ".pi", "extensions", "crawl4ai", ".venv", "bin", "crwl");
 	if (existsSync(projectVenv)) return projectVenv;
 
-	// 3. Globalny venv użytkownika (legacy / fallback)
+	// 3. Global user venv (legacy / fallback)
 	const globalVenv = join(homedir(), ".pi", "agent", "extensions", "crawl4ai", ".venv", "bin", "crwl");
 	if (existsSync(globalVenv)) return globalVenv;
 
-	// 4. Cokolwiek dostępne w PATH
+	// 4. Whatever is available in PATH
 	try {
 		return execSync("which crwl", { encoding: "utf-8", stdio: ["pipe", "pipe", "ignore"] }).trim();
 	} catch {
 		/* ignore */
 	}
 
-	// 5. Tymczasowy venv z instalacji testowej
+	// 5. Temporary venv from a test installation
 	if (existsSync("/tmp/crawl4ai-venv/bin/crwl")) return "/tmp/crawl4ai-venv/bin/crwl";
 
 	return null;
 }
 
-/** Zwraca bazowy katalog dla Crawl4AI. */
+/** Returns the base directory for Crawl4AI. */
 export function resolveCrawl4AiBaseDirectory(cwd: string): string {
 	return process.env.CRAWL4_AI_BASE_DIRECTORY?.trim() || cwd;
 }
 
-/** Zwraca katalog `.crawl4ai` używany przez Crawl4AI. */
+/** Returns the `.crawl4ai` directory used by Crawl4AI. */
 export function getCrawl4AiFolder(cwd: string): string {
 	return join(resolveCrawl4AiBaseDirectory(cwd), ".crawl4ai");
 }
 
-/** Normalizuje nazwę formatu Crawl4AI do canonical folder name. */
+/** Normalizes a Crawl4AI format name to a canonical folder name. */
 export function normalizeCrawl4AiFormat(format?: string | null): string {
 	const value = (format || "markdown").trim().toLowerCase();
 	switch (value) {
@@ -69,7 +69,7 @@ export function normalizeCrawl4AiFormat(format?: string | null): string {
 	}
 }
 
-/** Zamienia dowolny string na bezpieczny slug do pliku/katalogu. */
+/** Converts any string into a safe slug for use in file/directory names. */
 export function slugifyForFileName(input: string, fallback = "item"): string {
 	const normalized = input
 		.normalize("NFKD")
@@ -82,7 +82,7 @@ export function slugifyForFileName(input: string, fallback = "item"): string {
 	return fallback;
 }
 
-/** Normalizuje host do nazwy katalogu domeny. */
+/** Normalizes a host to a domain directory name. */
 export function getCrawl4AiDomainSlug(url: string): string {
 	try {
 		const parsed = new URL(url);
@@ -96,7 +96,7 @@ export function getCrawl4AiDomainSlug(url: string): string {
 	}
 }
 
-/** Normalizuje URL path/query do bezpiecznego sluga pliku. */
+/** Normalizes a URL path/query into a safe file slug. */
 export function getCrawl4AiUrlSlug(url: string): string {
 	try {
 		const parsed = new URL(url);
@@ -117,7 +117,7 @@ export function getCrawl4AiUrlSlug(url: string): string {
 	}
 }
 
-/** Krótki timestamp w formacie YYYY-MM-DD-HH-mm. */
+/** Short timestamp in YYYY-MM-DD-HH-mm format. */
 export function formatCrawl4AiTimestamp(date = new Date()): string {
 	const pad = (n: number) => String(n).padStart(2, "0");
 	return [
@@ -129,7 +129,7 @@ export function formatCrawl4AiTimestamp(date = new Date()): string {
 	].join("-");
 }
 
-/** Mapuje format Crawl4AI na rozszerzenie pliku wynikowego. */
+/** Maps a Crawl4AI format to the corresponding output file extension. */
 export function getCrawl4AiOutputExtension(format?: string | null): string {
 	switch (normalizeCrawl4AiFormat(format)) {
 		case "json":
@@ -143,7 +143,7 @@ export function getCrawl4AiOutputExtension(format?: string | null): string {
 	}
 }
 
-/** Buduje pełną ścieżkę dla outputu crawl4ai w katalogu projektu. */
+/** Builds the full output path for crawl4ai within the project directory. */
 export function getCrawl4AiOutputPath(
 	cwd: string,
 	url: string,
@@ -159,7 +159,7 @@ export function getCrawl4AiOutputPath(
 	return join(baseDir, "outputs", domain, formatSlug, `${timestamp}-${urlSlug}.${extension}`);
 }
 
-/** Zapewnia unikalną ścieżkę jeśli plik już istnieje. */
+/** Ensures a unique path if the file already exists. */
 export function ensureUniqueCrawl4AiOutputPath(targetPath: string): string {
 	if (!existsSync(targetPath)) return targetPath;
 
@@ -175,7 +175,7 @@ export function ensureUniqueCrawl4AiOutputPath(targetPath: string): string {
 	}
 }
 
-/** Zwraca zmodyfikowane env dla `spawn`. */
+/** Returns a modified env object for `spawn`. */
 export function getVenvEnv(crwlPath: string, baseDirectory?: string): NodeJS.ProcessEnv {
 	const env = { ...process.env };
 	const binDir = dirname(crwlPath);

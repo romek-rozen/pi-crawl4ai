@@ -1,9 +1,31 @@
 {
   "name": "pi-crawl4ai",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Crawl4AI extension for pi — web crawling and structured extraction",
-  "keywords": ["pi-package", "crawl4ai", "web-crawling", "data-extraction"],
+  "keywords": ["pi-package", "crawl4ai", "web-crawling", "data-extraction", "scraping", "markdown"],
   "license": "MIT",
+  "author": {
+    "name": "Roman",
+    "url": "https://rozenberger.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/romek-rozen/pi-crawl4ai.git"
+  },
+  "homepage": "https://github.com/romek-rozen/pi-crawl4ai#readme",
+  "bugs": {
+    "url": "https://github.com/romek-rozen/pi-crawl4ai/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "extensions/",
+    "prompts/",
+    "AGENTS.md",
+    "LICENSE",
+    "README.md"
+  ],
   "peerDependencies": {
     "@mariozechner/pi-coding-agent": "*",
     "@mariozechner/pi-ai": "*",

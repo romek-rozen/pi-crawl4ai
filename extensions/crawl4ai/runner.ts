@@ -1,8 +1,8 @@
 /**
  * runner.ts
  *
- * Niskopoziomowe wykonanie komendy `crwl crawl` przez `node:child_process/spawn`.
- * Obsługuje timeout, abort (Ctrl+C), streaming stdout do UI oraz zbieranie stderr.
+ * Low-level execution of the `crwl crawl` command via `node:child_process/spawn`.
+ * Handles timeout, abort (Ctrl+C), streaming stdout to the UI, and collecting stderr.
  */
 
 import { spawn } from "node:child_process";
@@ -15,13 +15,13 @@ export interface CrawlResult {
 }
 
 /**
- * Uruchamia `crwl crawl <args>` z opcjonalnym streamingiem postępu do TUI.
+ * Runs `crwl crawl <args>` with optional progress streaming to the TUI.
  *
- * @param crwlPath  absolutna ścieżka do binarki crwl
- * @param args      argumenty CLI (bez samego "crwl")
- * @param timeoutSec  maksymalny czas oczekiwania w sekundach
- * @param signal    AbortSignal z pi (np. gdy użytkownik naciśnie Esc)
- * @param onUpdate  callback do aktualizacji UI na żywo
+ * @param crwlPath  absolute path to the crwl binary
+ * @param args      CLI arguments (excluding "crwl" itself)
+ * @param timeoutSec  maximum wait time in seconds
+ * @param signal    AbortSignal from pi (e.g. when the user presses Esc)
+ * @param onUpdate  callback for live UI updates
  */
 export async function runCrawl(
 	crwlPath: string,
@@ -43,11 +43,11 @@ export async function runCrawl(
 		let stderr = "";
 		let killed = false;
 
-		// Automatyczne zabicie po przekroczeniu limitu czasu
+		// Automatically kill after the time limit is exceeded
 		const timeoutId = setTimeout(() => {
 			killed = true;
 			proc.kill("SIGTERM");
-			// Drastyczne zabicie jeśli SIGTERM nie zadziała w 5s
+			// Force kill if SIGTERM does not work within 5s
 			setTimeout(() => proc.kill("SIGKILL"), 5000);
 		}, timeoutSec * 1000);
 
@@ -82,7 +82,7 @@ export async function runCrawl(
 			}
 		});
 
-		// Reakcja na anulowanie przez użytkownika (Esc w pi)
+		// React to cancellation by the user (Esc in pi)
 		signal?.addEventListener("abort", () => {
 			proc.kill("SIGTERM");
 			reject(new Error("Crawl aborted by user"));

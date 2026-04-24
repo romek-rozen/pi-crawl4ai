@@ -1,10 +1,10 @@
 /**
  * commands.ts
  *
- * Rejestracja komend slash dostępnych dla użytkownika:
- *   /crawl4ai-install  – tworzy venv i instaluje crawl4ai lokalnie w projekcie
- *   /crawl4ai-doctor   – sprawdza poprawność instalacji (smoke test)
- *   /crawl4ai-status   – pokazuje wykrytą ścieżkę binarki
+ * Registration of slash commands available to the user:
+ *   /crawl4ai-install  – creates a venv and installs crawl4ai locally in the project
+ *   /crawl4ai-doctor   – checks the installation for correctness (smoke test)
+ *   /crawl4ai-status   – shows the detected binary path
  */
 
 import { join } from "node:path";
@@ -14,10 +14,10 @@ import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { findCrwl, getCrawl4AiFolder, getVenvEnv } from "./resolve.js";
 
 /**
- * Rejestruje wszystkie komendy związane z crawl4ai.
+ * Registers all commands related to crawl4ai.
  *
- * @param pi        API extensionu
- * @param onInstall callback wywoływany po udanej instalacji — aktualizuje cache ścieżki
+ * @param pi        extension API
+ * @param onInstall callback invoked after a successful installation — updates the path cache
  */
 export function registerCommands(pi: ExtensionAPI, onInstall: (path: string) => void) {
 	pi.registerCommand("crawl4ai-install", {

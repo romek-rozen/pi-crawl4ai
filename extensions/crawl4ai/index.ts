@@ -1,20 +1,20 @@
 /**
  * index.ts
  *
- * Entry point extensionu crawl4ai dla pi.
+ * Entry point for the crawl4ai extension for pi.
  *
- * Odpowiedzialność: podpięcie pod ExtensionAPI — rejestracja toola, komend
- * i listenera session_start. Cała logika biznesowa żyje w importowanych modułach.
+ * Responsibility: hooking into ExtensionAPI — registering the tool, commands,
+ * and the session_start listener. All business logic lives in imported modules.
  *
- * Struktura katalogu:
- *   types.ts   – schemy Typebox + interfejsy
- *   resolve.ts – wykrywanie binarki crwl i venv
- *   runner.ts  – spawn subprocess z timeout / abort
- *   args.ts    – mapowanie params → flagi CLI
- *   format.ts  – truncowanie i zapis do pliku tymczasowego
+ * Directory structure:
+ *   types.ts   – Typebox schemas + interfaces
+ *   resolve.ts – detection of the crwl binary and venv
+ *   runner.ts  – spawning subprocess with timeout / abort
+ *   args.ts    – mapping params → CLI flags
+ *   format.ts  – truncation and writing to a temporary file
  *   render.ts  – custom TUI rendering
- *   tool.ts    – definicja i execute toola `crawl4ai`
- *   commands.ts – komendy /crawl4ai-*
+ *   tool.ts    – definition and execution of the `crawl4ai` tool
+ *   commands.ts – /crawl4ai-* commands
  */
 
 import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
@@ -24,17 +24,17 @@ import { crawlToolMeta, executeCrawl, renderCall, renderResult } from "./tool.js
 import { registerCommands } from "./commands.js";
 
 export default function crawl4aiExtension(pi: ExtensionAPI) {
-	/** Aktualnie znana ścieżka do `crwl` (cache na poziomie sesji). */
+	/** Currently known path to `crwl` (session-level cache). */
 	let cachedCrwlPath: string | null = null;
 
-	/** Pobiera (lub odnajduje) ścieżkę do crwl. */
+	/** Retrieves (or locates) the path to crwl. */
 	function resolveCrwl(ctx: ExtensionContext): string | null {
 		if (cachedCrwlPath) return cachedCrwlPath;
 		cachedCrwlPath = findCrwl(ctx.cwd);
 		return cachedCrwlPath;
 	}
 
-	/** Sprawdza czy crwl jest dostępny; jeśli nie — pokazuje notify i zwraca false. */
+	/** Checks whether crwl is available; if not — shows a notification and returns false. */
 	function checkInstalled(ctx: ExtensionContext): boolean {
 		if (resolveCrwl(ctx)) return true;
 		ctx.ui.notify(
@@ -44,7 +44,7 @@ export default function crawl4aiExtension(pi: ExtensionAPI) {
 		return false;
 	}
 
-	// ── Rejestracja custom toola widocznego dla LLM ──
+	// ── Register custom tool visible to the LLM ──
 	pi.registerTool({
 		...crawlToolMeta,
 		renderCall,
@@ -69,12 +69,12 @@ export default function crawl4aiExtension(pi: ExtensionAPI) {
 		},
 	});
 
-	// ── Rejestracja komend slash dla użytkownika ──
+	// ── Register slash commands for the user ──
 	registerCommands(pi, (newPath) => {
-		cachedCrwlPath = newPath; // aktualizacja cache po udanej instalacji
+		cachedCrwlPath = newPath; // update cache after a successful installation
 	});
 
-	// ─-- Listener startu sesji: ostrzeżenie jeśli brak crawl4ai --─
+	// ─-- Session start listener: warning if crawl4ai is missing --─
 	pi.on("session_start", async (_event, ctx) => {
 		cachedCrwlPath = findCrwl(ctx.cwd);
 		if (!cachedCrwlPath) {

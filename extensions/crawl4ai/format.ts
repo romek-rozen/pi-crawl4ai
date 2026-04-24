@@ -1,10 +1,10 @@
 /**
  * format.ts
  *
- * Post-processing wyniku crawl:
- * - truncowanie do limitów pi (50 KB / 2000 linii)
- * - zapisanie pełnego outputu do pliku tymczasowego gdy nastąpiło obcięcie
- * - budowanie informacji zwrotnej dla LLM
+ * Post-processing of the crawl result:
+ * - truncation to pi limits (50 KB / 2000 lines)
+ * - saving the full output to a temporary file when truncation occurred
+ * - building the feedback message for the LLM
  */
 
 import { mkdtemp, writeFile } from "node:fs/promises";
@@ -19,10 +19,10 @@ import {
 } from "@mariozechner/pi-coding-agent";
 
 /**
- * Przygotowuje finalny tekst do wyświetlenia LLM.
- * Jeśli wynik jest za duży — obcina i zapisuje pełną wersję do /tmp.
+ * Prepares the final text to be shown to the LLM.
+ * If the result is too large — truncates it and saves the full version to /tmp.
  *
- * @returns obiekt { text, truncated, fullOutputPath }
+ * @returns object { text, truncated, fullOutputPath }
  */
 export async function formatCrawlOutput(
 	stdout: string,

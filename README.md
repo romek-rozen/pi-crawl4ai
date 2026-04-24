@@ -8,10 +8,14 @@ A production-ready [pi](https://github.com/mariozechner/pi) package that integra
 ## Install
 
 ```bash
-pi install git:github.com/romek-rozen/pi-crawl4ai
+pi install npm:pi-crawl4ai
 ```
 
-Or clone into your workspace and keep the `.pi/` folder at the project root.
+Or from git:
+
+```bash
+pi install git:github.com/romek-rozen/pi-crawl4ai
+```
 
 ## What's included
 

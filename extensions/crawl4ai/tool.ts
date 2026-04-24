@@ -1,12 +1,12 @@
 /**
  * tool.ts
  *
- * Definicja custom toola `crawl4ai` widocznego dla LLM.
+ * Definition of the custom `crawl4ai` tool visible to the LLM.
  *
- * UX decision: output jest zapisywany do katalogu projektu:
+ * UX decision: output is saved to the project directory:
  *   ./.crawl4ai/outputs/<domain>/<format>/<timestamp>-<slug>.<ext>
- * LLM / użytkownik dostaje tylko ścieżkę do pełnego pliku.
- * Jeśli agent chce zobaczyć treść, ma użyć `read` na wskazanym pliku.
+ * The LLM / user only receives the path to the full file.
+ * If the agent wants to inspect the content, it should use `read` on the given file.
  */
 
 import { mkdir, writeFile } from "node:fs/promises";
@@ -23,7 +23,7 @@ import {
 } from "./resolve.js";
 import { renderCrawlCall, renderCrawlResult } from "./render.js";
 
-/** Metadane toola — używane w `pi.registerTool()`. */
+/** Tool metadata — used in `pi.registerTool()`. */
 export const crawlToolMeta = {
 	name: "crawl4ai" as const,
 	label: "Crawl4AI" as const,
@@ -63,7 +63,7 @@ async function saveToProjectOutput(
 	return { path: targetPath };
 }
 
-/** Główna funkcja wykonawcza toola. */
+/** Main execution function of the tool. */
 function validateCrawlRequest(params: CrawlParamsType): string | null {
 	if (params.output_format === "json") {
 		const hasLlmExtraction = Boolean(params.json_extract?.trim());
@@ -147,7 +147,7 @@ export async function executeCrawl(
 		content: [{ type: "text", text: `[crawl4ai] Starting crawl of ${params.url} …` }],
 	});
 
-	// ── Wykonanie crawl przez subprocess ──
+	// ── Execute crawl via subprocess ──
 	let result: { stdout: string; stderr: string; exitCode: number | null };
 	try {
 		result = await runCrawl(crwlPath, args, timeoutSec, signal, onUpdate, _ctx.cwd);
@@ -159,7 +159,7 @@ export async function executeCrawl(
 		};
 	}
 
-	// ── Budowa metadanych ──
+	// ── Build metadata ──
 	const details: CrawlDetails = {
 		url: params.url,
 		command: crwlPath,
@@ -169,13 +169,13 @@ export async function executeCrawl(
 		stdoutPreview: result.stdout?.slice(0, 500) || undefined,
 	};
 
-	// Niezerowy exit code
+	// Non-zero exit code
 	if (result.exitCode !== 0) {
 		const msg = formatErrorOutput(result);
 		return { content: [{ type: "text", text: msg }], details, isError: true };
 	}
 
-	// Pusty wynik
+	// Empty result
 	if (!result.stdout.trim()) {
 		return {
 			content: [{ type: "text", text: "[crawl4ai] Crawl succeeded but returned no content." }],
@@ -183,7 +183,7 @@ export async function executeCrawl(
 		};
 	}
 
-	// ── Zapis do katalogu projektu ──
+	// ── Save to project directory ──
 	const { path } = await saveToProjectOutput(
 		_ctx.cwd,
 		params.url,
@@ -204,5 +204,5 @@ export async function executeCrawl(
 	};
 }
 
-/** Eksport rendererów TUI (używane w `pi.registerTool()`). */
+/** Export of TUI renderers (used in `pi.registerTool()`). */
 export { renderCrawlCall as renderCall, renderCrawlResult as renderResult };

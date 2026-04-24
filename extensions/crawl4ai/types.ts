@@ -1,13 +1,13 @@
 /**
  * types.ts
  *
- * Schematy parametrów (Typebox) i interfejsy używane przez resztę extensionu.
+ * Parameter schemas (Typebox) and interfaces used by the rest of the extension.
  */
 
 import { StringEnum } from "@mariozechner/pi-ai";
 import { Type } from "typebox";
 
-/** Parametry toola `crawl4ai` — mapują się na flagi CLI `crwl crawl`. */
+/** Parameters of the `crawl4ai` tool — mapped to CLI flags of `crwl crawl`. */
 export const CrawlParams = Type.Object({
 	url: Type.String({ description: "URL to crawl" }),
 	output_format: Type.Optional(
@@ -64,10 +64,10 @@ export const CrawlParams = Type.Object({
 	),
 });
 
-/** Typ wygenerowany z CrawlParams (używany w runtime). */
+/** Type generated from CrawlParams (used at runtime). */
 export type CrawlParamsType = import("typebox").Static<typeof CrawlParams>;
 
-/** Metadane zwracane w `details` każdego wyniku toola. */
+/** Metadata returned in `details` of every tool result. */
 export interface CrawlDetails {
 	url: string;
 	command: string;
