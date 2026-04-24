@@ -20,7 +20,8 @@ pi install git:github.com/romek-rozen/pi-crawl4ai
 ## What's included
 
 - `extensions/crawl4ai/` — the full extension source (tool, commands, renderers)
-- `prompts/crawler.md` — a dedicated Crawler agent prompt
+- `agents/` — specialized agent definitions for use with subagent/run
+- `prompts/crawler.md` — a dedicated Crawler prompt template
 - MIT license
 
 ## Quick start
@@ -67,6 +68,31 @@ pi install git:github.com/romek-rozen/pi-crawl4ai
 | `/crawl4ai-test` | Run a smoke test crawl on example.com |
 | `/crawl4ai-status` | Show resolved binary path and version |
 | `/crawl4ai-clear-cache` | Remove local `.crawl4ai/cache` and `.crawl4ai/robots` |
+| `/crawl4ai-setup-agents` | Symlink agents to `~/.pi/agent/agents/` for use with subagent/run |
+
+## Agents
+
+Three specialized agents are included for use with the subagent tool:
+
+| Agent | Purpose | Model |
+|-------|---------|-------|
+| `crawler` | Single page crawl, clean markdown extraction | Sonnet |
+| `deep-crawler` | Multi-page deep crawl (BFS/DFS/best-first) | Sonnet |
+| `extractor` | Structured data extraction (LLM or CSS/XPath) | Sonnet |
+
+To set up agents, run inside pi:
+
+```
+/crawl4ai-setup-agents
+```
+
+This symlinks the agent definitions to `~/.pi/agent/agents/`. After setup, you can use them with the subagent tool:
+
+```
+Use crawler to scrape https://example.com
+Use deep-crawler to explore https://docs.example.com with max 10 pages
+Use extractor to get all product prices from https://shop.example.com
+```
 
 ## JSON extraction requirements
 

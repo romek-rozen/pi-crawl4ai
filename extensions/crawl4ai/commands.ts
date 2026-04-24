@@ -2,15 +2,19 @@
  * commands.ts
  *
  * Registration of slash commands available to the user:
- *   /crawl4ai-install  – creates a venv and installs crawl4ai locally in the project
- *   /crawl4ai-doctor   – checks the installation for correctness (smoke test)
- *   /crawl4ai-status   – shows the detected binary path
+ *   /crawl4ai-install       – creates a venv and installs crawl4ai locally in the project
+ *   /crawl4ai-test          – runs a smoke test crawl on example.com
+ *   /crawl4ai-status        – shows the detected binary path
+ *   /crawl4ai-clear-cache   – clears local crawl4ai cache
+ *   /crawl4ai-setup-agents  – symlinks agent definitions for use with subagent/run
  */
 
-import { join } from "node:path";
+import { join, dirname, resolve } from "node:path";
 import { execSync } from "node:child_process";
-import { rmSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, rmSync, symlinkSync, readlinkSync, unlinkSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import { getAgentDir } from "@mariozechner/pi-coding-agent";
 import { findCrwl, getCrawl4AiFolder, getVenvEnv } from "./resolve.js";
 
 /**
@@ -114,6 +118,59 @@ export function registerCommands(pi: ExtensionAPI, onInstall: (path: string) => 
 			} catch {
 				ctx.ui.notify(`[crawl4ai] Binary: ${path} (version check failed)`, "info");
 			}
+		},
+	});
+
+	pi.registerCommand("crawl4ai-setup-agents", {
+		description: "[crawl4ai] Symlink crawl4ai agents to ~/.pi/agent/agents/ for use with `run`",
+		handler: async (_args, ctx) => {
+			const extensionDir = dirname(fileURLToPath(import.meta.url));
+			const packageRoot = resolve(extensionDir, "..", "..");
+			const agentsSourceDir = join(packageRoot, "agents");
+
+			if (!existsSync(agentsSourceDir)) {
+				ctx.ui.notify("[crawl4ai] agents/ directory not found in package.", "error");
+				return;
+			}
+
+			const targetDir = join(getAgentDir(), "agents");
+			mkdirSync(targetDir, { recursive: true });
+
+			const agentFiles = readdirSync(agentsSourceDir).filter((f) => f.endsWith(".md"));
+			if (agentFiles.length === 0) {
+				ctx.ui.notify("[crawl4ai] No agent definitions found.", "warning");
+				return;
+			}
+
+			const results: string[] = [];
+			for (const file of agentFiles) {
+				const source = join(agentsSourceDir, file);
+				const target = join(targetDir, file);
+
+				// Remove existing symlink if it points somewhere else
+				if (existsSync(target)) {
+					try {
+						const existing = readlinkSync(target);
+						if (existing === source) {
+							results.push(`${file} (already linked)`);
+							continue;
+						}
+						unlinkSync(target);
+					} catch {
+						// Not a symlink — skip to avoid overwriting user files
+						results.push(`${file} (skipped — file exists)`);
+						continue;
+					}
+				}
+
+				symlinkSync(source, target);
+				results.push(`${file} (linked)`);
+			}
+
+			ctx.ui.notify(
+				`[crawl4ai] Agents set up in ${targetDir}:\n${results.map((r) => `  ${r}`).join("\n")}`,
+				"success",
+			);
 		},
 	});
 }

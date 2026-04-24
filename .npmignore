@@ -3,6 +3,7 @@
 .github/
 .crawl4ai/
 node_modules/
+.pi/
 
 # Config & metadata
 .gitignore
