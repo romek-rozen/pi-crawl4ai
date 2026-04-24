@@ -1,5 +1,5 @@
 ---
-name: extract
+name: crawl4ai-extract
 description: Extract structured data (JSON) from a web page using LLM or CSS/XPath.
 argument-hint: "<URL> <what to extract>"
 tools: crawl4ai, read, bash

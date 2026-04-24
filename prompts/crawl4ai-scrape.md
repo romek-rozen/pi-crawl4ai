@@ -1,5 +1,5 @@
 ---
-name: scrape
+name: crawl4ai-scrape
 description: Scrape a single web page and extract clean markdown content.
 argument-hint: "<URL> [instructions]"
 tools: crawl4ai, read, bash

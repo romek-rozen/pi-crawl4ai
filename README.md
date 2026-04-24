@@ -62,12 +62,14 @@ Crawl https://docs.example.com deeply using BFS, max 10 pages.
 Extract all product names and prices from https://shop.example.com as JSON.
 ```
 
-### Prompt template
+### Prompt templates
 
-Use the built-in `/crawler` prompt template to start a dedicated crawl session:
+Three prompt templates are available:
 
 ```
-/crawler https://example.com
+/crawl4ai https://example.com                       # general — scrape, crawl, or extract
+/crawl4ai-scrape https://example.com                 # single page → clean markdown
+/crawl4ai-extract https://example.com product prices # single page → structured JSON
 ```
 
 ### Subagent workflows

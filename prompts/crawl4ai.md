@@ -1,5 +1,5 @@
 ---
-name: crawler
+name: crawl4ai
 description: Web scraping specialist using crawl4ai. Extracts clean markdown, structured data, and performs deep crawls.
 argument-hint: "<URL> [instructions]"
 tools: crawl4ai, read, bash
