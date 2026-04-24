@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.2] - 2026-04-24
+
+### Added
+
+- Prompt templates `/scrape` and `/extract` for quick single-purpose workflows
+- CHANGELOG.md, ROADMAP.md, TODO.md for project tracking
+- npm and GitHub badges and links in README
+
+### Changed
+
+- Agents renamed: `crawler` → `crawl4ai-scrape`, `deep-crawler` → `crawl4ai-crawl`, `extractor` → `crawl4ai-extract`
+- Agents no longer hardcode a model — use whatever model is active in pi
+- Each agent now has explicit "SHOULD use" / "must NOT use" parameter guidance
+- All comments and documentation translated from Polish to English
+- README expanded with Usage section (direct tool, prompt templates, subagent workflows)
+
 ## [0.1.0] - 2026-04-24
 
 ### Added
