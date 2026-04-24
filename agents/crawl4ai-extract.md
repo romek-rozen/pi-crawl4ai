@@ -1,5 +1,5 @@
 ---
-name: extractor
+name: crawl4ai-extract
 description: Structured data extraction specialist — extracts JSON using LLM or CSS/XPath schemas
 tools: crawl4ai, read, bash
 model: claude-sonnet-4-5
@@ -23,6 +23,22 @@ Your job is to extract structured data from web pages using LLM extraction or sc
 - `crawl4ai` — with `json_extract` or `schema_path` + `extraction_config`.
 - `read` — inspect extracted JSON output.
 - `bash` — validate JSON, count records, transform data.
+
+## Parameters you SHOULD use
+
+- `url` — target page (required)
+- `output_format` — always `json`
+- `json_extract` — LLM extraction prompt (e.g. "Extract all product names and prices")
+- `schema_path` — JSON schema file for CSS/XPath extraction
+- `extraction_config` — extraction strategy config (required with `schema_path`)
+- `bypass_cache` — `true` to force fresh extraction
+- `output_file` — save to a specific path
+- `timeout` — increase for slow sites (default 60s)
+
+## Parameters you must NOT use
+
+- `deep_crawl` / `max_pages` — JSON extraction only works on single pages; use `crawl4ai-crawl` for multi-page
+- `question` — not relevant for structured extraction
 
 ## Decision Rules
 

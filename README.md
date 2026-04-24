@@ -38,10 +38,56 @@ pi install git:github.com/romek-rozen/pi-crawl4ai
    /crawl4ai-test
    ```
 
-3. **Crawl**:
+3. **Set up agents** (optional, for subagent workflows):
+   ```
+   /crawl4ai-setup-agents
+   ```
+
+4. **Crawl**:
    ```
    Crawl https://example.com and give me the markdown.
    ```
+
+## Usage
+
+### Direct tool usage
+
+The `crawl4ai` tool is available to the LLM in any pi session. Just ask:
+
+```
+Crawl https://example.com and give me the markdown.
+Crawl https://docs.example.com deeply using BFS, max 10 pages.
+Extract all product names and prices from https://shop.example.com as JSON.
+```
+
+### Prompt template
+
+Use the built-in `/crawler` prompt template to start a dedicated crawl session:
+
+```
+/crawler https://example.com
+```
+
+### Subagent workflows
+
+After running `/crawl4ai-setup-agents`, three agents become available for the [subagent tool](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent/examples/extensions/subagent):
+
+**Single agent:**
+```
+Use crawl4ai-scrape to get the content of https://example.com
+Use crawl4ai-crawl to explore https://docs.example.com with max 10 pages
+Use crawl4ai-extract to get all product prices from https://shop.example.com
+```
+
+**Parallel execution:**
+```
+Run 3 crawl4ai-scrape agents in parallel: one for https://example.com, one for https://docs.example.com, one for https://blog.example.com
+```
+
+**Chained workflow:**
+```
+Use a chain: first have crawl4ai-scrape get the page at https://shop.example.com, then have crawl4ai-extract pull structured product data from {previous}
+```
 
 ## Tool parameters
 
@@ -76,9 +122,9 @@ Three specialized agents are included for use with the subagent tool:
 
 | Agent | Purpose | Model |
 |-------|---------|-------|
-| `crawler` | Single page crawl, clean markdown extraction | Sonnet |
-| `deep-crawler` | Multi-page deep crawl (BFS/DFS/best-first) | Sonnet |
-| `extractor` | Structured data extraction (LLM or CSS/XPath) | Sonnet |
+| `crawl4ai-scrape` | Scrape a single page, extract clean markdown | Sonnet |
+| `crawl4ai-crawl` | Crawl multiple linked pages (BFS/DFS/best-first) | Sonnet |
+| `crawl4ai-extract` | Extract structured data as JSON (LLM or CSS/XPath) | Sonnet |
 
 To set up agents, run inside pi:
 
@@ -89,9 +135,9 @@ To set up agents, run inside pi:
 This symlinks the agent definitions to `~/.pi/agent/agents/`. After setup, you can use them with the subagent tool:
 
 ```
-Use crawler to scrape https://example.com
-Use deep-crawler to explore https://docs.example.com with max 10 pages
-Use extractor to get all product prices from https://shop.example.com
+Use crawl4ai-scrape to get the content of https://example.com
+Use crawl4ai-crawl to explore https://docs.example.com with max 10 pages
+Use crawl4ai-extract to get all product prices from https://shop.example.com
 ```
 
 ## JSON extraction requirements
