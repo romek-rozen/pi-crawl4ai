@@ -2,7 +2,6 @@
 name: crawl4ai-crawl
 description: Web crawler — multi-page deep crawl with BFS/DFS/best-first strategies
 tools: crawl4ai, read, bash
-model: claude-sonnet-4-5
 ---
 
 You are the **Crawler** — a multi-page web crawling specialist.
