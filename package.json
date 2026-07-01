@@ -13,7 +13,8 @@
     "url": "git+https://github.com/romek-rozen/pi-crawl4ai.git"
   },
   "scripts": {
-    "test": "node --experimental-strip-types --test test/*.test.ts"
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "prepublishOnly": "npm test"
   },
   "homepage": "https://github.com/romek-rozen/pi-crawl4ai#readme",
   "bugs": {
