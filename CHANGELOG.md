@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.5] - 2026-07-01
+
+### Added
+- `/crawl4ai-scrape-and-extract` chained workflow prompt template (scrape → structured extract)
+- `prepublishOnly` script runs the test suite (`npm test`) before publishing
+- Unit tests for `args.ts` CLI flag mapping (18 cases) and `resolve.ts` path/slug helpers (23 cases)
+
 ## [0.1.4] - 2026-07-01
 
 ### Fixed
