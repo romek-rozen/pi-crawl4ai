@@ -8,11 +8,12 @@
 
 ## Medium priority
 
-- [ ] Run `npm pkg fix` to normalize `repository.url` warning
+- [x] Run `npm pkg fix` to normalize `repository.url` warning
 - [ ] Add `prepublishOnly` script to package.json (version check, lint, etc.)
 - [ ] Add workflow prompt templates (e.g. `/scrape-and-extract` chain)
 
 ## Low priority
 
+- [x] Add tests for request validation (`validate.ts`) — covers issue #1
 - [ ] Add tests for `resolve.ts` path helpers
 - [ ] Add tests for `args.ts` CLI flag mapping

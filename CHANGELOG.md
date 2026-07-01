@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.4] - 2026-07-01
+
+### Fixed
+- Issue #1: `output_format=json` + `deep_crawl` now reports the accurate "not supported by Crawl4AI" reason first, instead of a misleading "requires an extraction strategy" message
+
+### Changed
+- Extract crawl-request validation into a dependency-free `validate.ts` module
+
+### Added
+- Regression tests for `validateCrawlRequest` (`npm test`, Node's built-in test runner)
+- Normalize `repository.url` to silence npm publish warning
+
 ## [0.1.3] - 2026-07-01
 
 ### Changed

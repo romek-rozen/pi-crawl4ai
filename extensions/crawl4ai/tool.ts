@@ -15,6 +15,7 @@ import { withFileMutationQueue } from "@earendil-works/pi-coding-agent";
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 
 import { CrawlParams, type CrawlDetails, type CrawlParamsType } from "./types.js";
+import { validateCrawlRequest } from "./validate.js";
 import { buildArgs } from "./args.js";
 import { runCrawl } from "./runner.js";
 import {
@@ -61,29 +62,6 @@ async function saveToProjectOutput(
 	});
 
 	return { path: targetPath };
-}
-
-/** Main execution function of the tool. */
-function validateCrawlRequest(params: CrawlParamsType): string | null {
-	if (params.output_format === "json") {
-		const hasLlmExtraction = Boolean(params.json_extract?.trim());
-		const hasSchemaExtraction = Boolean(params.schema_path?.trim() && params.extraction_config?.trim());
-		if (!hasLlmExtraction && !hasSchemaExtraction) {
-			return (
-				"output_format=json requires an extraction strategy. " +
-				"Use json_extract (LLM) or schema_path + extraction_config (CSS/XPath). " +
-				"Example extraction_config YAML:\n" +
-				"type: json-css\nparams:\n  verbose: true"
-			);
-		}
-		if (params.deep_crawl) {
-			return (
-				"output_format=json with deep_crawl is not supported by Crawl4AI. " +
-				"Use markdown output for deep crawls, or crawl a single page with JSON extraction."
-			);
-		}
-	}
-	return null;
 }
 
 function formatErrorOutput(result: { stdout: string; stderr: string; exitCode: number | null }): string {
