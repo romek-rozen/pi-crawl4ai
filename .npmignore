@@ -4,6 +4,7 @@
 .crawl4ai/
 node_modules/
 .pi/
+.secret
 
 # Config & metadata
 .gitignore
