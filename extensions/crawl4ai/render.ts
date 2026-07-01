@@ -5,7 +5,7 @@
  * Goal: avoid flooding the terminal with text — show only a preview + path.
  */
 
-import { Text } from "@mariozechner/pi-tui";
+import { Text } from "@earendil-works/pi-tui";
 import type { CrawlDetails } from "./types.js";
 
 /** How to display a tool call in the TUI (before/after execution). */
@@ -20,11 +20,11 @@ export function renderCrawlCall(args: Record<string, unknown>, theme: any): Text
 /** How to display a tool result in the TUI. */
 export function renderCrawlResult(
 	result: { content: Array<{ type: string; text?: string }>; details?: unknown },
-	expanded: boolean,
-	isPartial: boolean,
+	options: { expanded: boolean; isPartial: boolean },
 	theme: any,
+	_context?: any,
 ): Text {
-	if (isPartial) {
+	if (options.isPartial) {
 		return new Text(theme.fg("warning", "[crawl4ai] Crawling…"), 0, 0);
 	}
 
@@ -47,7 +47,7 @@ export function renderCrawlResult(
 	}
 
 	// In expanded mode — max 5 preview lines
-	if (expanded && result.content[0]?.type === "text") {
+	if (options.expanded && result.content[0]?.type === "text") {
 		const lines = result.content[0].text!.split("\n");
 		// Skip header lines ("[crawl4ai] Crawl complete", "--- Preview ---", etc.)
 		const previewStart = lines.findIndex((l) => l.startsWith("--- Preview"));

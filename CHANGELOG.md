@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.3] - 2026-07-01
+
+### Changed
+- Migrate npm scope from `@mariozechner/*` to `@earendil-works/*` for pi 0.80.3 compatibility
+- Update `renderResult` signature to pi 0.80.3 API (`expanded`/`isPartial` moved into an `options` object)
+
 ## [0.1.2] - 2026-04-24
 
 ### Added

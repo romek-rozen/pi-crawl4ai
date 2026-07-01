@@ -4,7 +4,7 @@
  * Parameter schemas (Typebox) and interfaces used by the rest of the extension.
  */
 
-import { StringEnum } from "@mariozechner/pi-ai";
+import { StringEnum } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
 
 /** Parameters of the `crawl4ai` tool — mapped to CLI flags of `crwl crawl`. */

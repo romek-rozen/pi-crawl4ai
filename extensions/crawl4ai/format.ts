@@ -16,7 +16,7 @@ import {
 	formatSize,
 	truncateHead,
 	withFileMutationQueue,
-} from "@mariozechner/pi-coding-agent";
+} from "@earendil-works/pi-coding-agent";
 
 /**
  * Prepares the final text to be shown to the LLM.

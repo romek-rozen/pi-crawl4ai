@@ -17,7 +17,7 @@
  *   commands.ts – /crawl4ai-* commands
  */
 
-import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 
 import { findCrwl } from "./resolve.js";
 import { crawlToolMeta, executeCrawl, renderCall, renderResult } from "./tool.js";
