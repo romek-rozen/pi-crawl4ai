@@ -3,9 +3,9 @@
 [![npm](https://img.shields.io/npm/v/pi-crawl4ai)](https://www.npmjs.com/package/pi-crawl4ai)
 [![GitHub](https://img.shields.io/github/license/romek-rozen/pi-crawl4ai)](https://github.com/romek-rozen/pi-crawl4ai)
 [![Built with Crawl4AI](https://img.shields.io/badge/Built%20with-Crawl4AI-blue)](https://github.com/unclecode/crawl4ai)
-[![Built for pi](https://img.shields.io/badge/Built%20for-pi-green)](https://github.com/mariozechner/pi)
+[![Built for pi](https://img.shields.io/badge/Built%20for-pi-green)](https://github.com/earendil-works/pi)
 
-A production-ready [pi](https://github.com/mariozechner/pi) package that integrates [Crawl4AI](https://github.com/unclecode/crawl4ai) — an open-source LLM-friendly web crawler — as a custom tool and agent prompt.
+A production-ready [pi](https://github.com/earendil-works/pi) package that integrates [Crawl4AI](https://github.com/unclecode/crawl4ai) — an open-source LLM-friendly web crawler — as a custom tool and agent prompt.
 
 ## Install
 
@@ -74,7 +74,7 @@ Three prompt templates are available:
 
 ### Subagent workflows
 
-After running `/crawl4ai-setup-agents`, three agents become available for the [subagent tool](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent/examples/extensions/subagent):
+After running `/crawl4ai-setup-agents`, three agents become available for the [subagent tool](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/examples/extensions/subagent):
 
 **Single agent:**
 ```
