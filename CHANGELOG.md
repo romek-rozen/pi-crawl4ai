@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.6] - 2026-08-11
+
+### Fixed
+- Detect Crawl4AI installed in the user-level `~/.pi/extensions/crawl4ai/.venv` directory while retaining the legacy fallback path
+- Improve `/crawl4ai-status` feedback with a health check, binary path, working directory, timeout, and persistent footer status
+
 ## [0.1.5] - 2026-07-01
 
 ### Added
