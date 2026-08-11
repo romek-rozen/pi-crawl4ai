@@ -1,8 +1,16 @@
 {
   "name": "pi-crawl4ai",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "description": "Crawl4AI extension for pi with token-efficient Trafilatura extraction",
-  "keywords": ["pi-package", "crawl4ai", "trafilatura", "web-crawling", "data-extraction", "scraping", "markdown"],
+  "keywords": [
+    "pi-package",
+    "crawl4ai",
+    "trafilatura",
+    "web-crawling",
+    "data-extraction",
+    "scraping",
+    "markdown"
+  ],
   "license": "MIT",
   "author": {
     "name": "Roman",
@@ -41,8 +49,14 @@
     "typebox": "*"
   },
   "pi": {
-    "extensions": ["./extensions/crawl4ai"],
-    "agents": ["./agents"],
-    "prompts": ["./prompts"]
+    "extensions": [
+      "./extensions/crawl4ai"
+    ],
+    "agents": [
+      "./agents"
+    ],
+    "prompts": [
+      "./prompts"
+    ]
   }
 }
