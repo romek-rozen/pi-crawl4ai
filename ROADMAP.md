@@ -2,6 +2,8 @@
 
 ## v0.2.0 — Configuration & control
 
+- **Trafilatura deep-crawl support** — process and preserve per-page HTML/extracted artifacts for Crawl4AI deep-crawl results.
+- **Extraction profiles** — presets for precision/recall, comments, tables, links, and formatting while keeping token use explicit.
 - **LLM provider configuration** — set up the LLM provider for Crawl4AI (OpenAI, Anthropic, etc.) directly from pi, without manually editing `~/.crawl4ai/global.yml`. Possible `/crawl4ai-config` command.
 - **Response length control** — parameter to limit or expand inline preview length (e.g. default 100 chars, option for 500+). Useful for quick summaries vs. detailed extraction.
 - **Auto-setup agents** — automatically symlink agents on `session_start` instead of requiring `/crawl4ai-setup-agents`.

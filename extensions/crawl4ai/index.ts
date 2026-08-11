@@ -11,7 +11,8 @@
  *   resolve.ts – detection of the crwl binary and venv
  *   runner.ts  – spawning subprocess with timeout / abort
  *   args.ts    – mapping params → CLI flags
- *   format.ts  – truncation and writing to a temporary file
+ *   format.ts  – legacy truncation helper (not used by current output flow)
+ *   trafilatura.ts – optional compact HTML extraction
  *   render.ts  – custom TUI rendering
  *   tool.ts    – definition and execution of the `crawl4ai` tool
  *   commands.ts – /crawl4ai-* commands

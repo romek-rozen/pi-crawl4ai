@@ -11,7 +11,36 @@ import { Type } from "typebox";
 export const CrawlParams = Type.Object({
 	url: Type.String({ description: "URL to crawl" }),
 	output_format: Type.Optional(
-		StringEnum(["markdown", "markdown-fit", "md", "md-fit", "json", "all"] as const),
+		StringEnum(["markdown", "markdown-fit", "md", "md-fit", "text", "json", "all"] as const),
+	),
+	extractor: Type.Optional(
+		StringEnum(["trafilatura"] as const, {
+			description: "Optionally extract the Crawl4AI-fetched raw HTML with Trafilatura",
+		}),
+	),
+	include_links: Type.Optional(
+		Type.Boolean({
+			default: false,
+			description: "Trafilatura: preserve link targets in Markdown output",
+		}),
+	),
+	include_formatting: Type.Optional(
+		Type.Boolean({
+			default: true,
+			description: "Trafilatura: preserve Markdown headings/emphasis (default true for Markdown)",
+		}),
+	),
+	include_images: Type.Optional(
+		Type.Boolean({
+			default: false,
+			description: "Trafilatura: include images with alt text and resolved source URLs",
+		}),
+	),
+	include_tables: Type.Optional(
+		Type.Boolean({
+			default: true,
+			description: "Trafilatura: preserve tables (disable to reduce output)",
+		}),
 	),
 	deep_crawl: Type.Optional(
 		StringEnum(["bfs", "dfs", "best-first"] as const),
@@ -55,8 +84,7 @@ export const CrawlParams = Type.Object({
 	),
 	output_file: Type.Optional(
 		Type.String({
-			description:
-				"Save full output to this file path instead of returning it inline",
+			description: "Save full output to this file path instead of the default project output path",
 		}),
 	),
 	timeout: Type.Optional(
@@ -75,7 +103,10 @@ export interface CrawlDetails {
 	exitCode: number | null;
 	truncated?: boolean;
 	fullOutputPath?: string;
+	rawHtmlPath?: string;
 	outputFile?: string;
+	extractor?: "trafilatura";
+	error?: string;
 	stderr?: string;
 	stdoutPreview?: string;
 }

@@ -19,6 +19,36 @@ import type { CrawlParamsType } from "./types.js";
  * request is invalid, or `null` if it is safe to run.
  */
 export function validateCrawlRequest(params: CrawlParamsType): string | null {
+	if (params.extractor === "trafilatura") {
+		if (params.deep_crawl) {
+			return "extractor=trafilatura currently supports a single page only; deep_crawl is not supported.";
+		}
+		if (params.question || params.json_extract || params.schema_path || params.extraction_config) {
+			return (
+				"extractor=trafilatura cannot be combined with question or structured JSON extraction. " +
+				"Use Trafilatura for readable Markdown/text, or remove extractor for JSON/question workflows."
+			);
+		}
+		if (params.output_format && !["markdown", "md", "text"].includes(params.output_format)) {
+			return "extractor=trafilatura supports output_format=markdown, md, or text.";
+		}
+		if (params.output_format === "text" && (params.include_links || params.include_formatting)) {
+			return "include_links and include_formatting require Trafilatura Markdown output, not text.";
+		}
+	} else {
+		if (params.output_format === "text") {
+			return "output_format=text requires extractor=trafilatura.";
+		}
+		if (
+			params.include_links ||
+			params.include_formatting ||
+			params.include_images ||
+			params.include_tables !== undefined
+		) {
+			return "include_links, include_formatting, include_images, and include_tables require extractor=trafilatura.";
+		}
+	}
+
 	if (params.output_format === "json") {
 		// Deep crawl + JSON is unsupported by Crawl4AI itself (issue #1).
 		// Check this first so the user gets the most relevant reason, even when

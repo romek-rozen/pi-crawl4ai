@@ -10,6 +10,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 
 import {
 	slugifyForFileName,
@@ -19,6 +20,9 @@ import {
 	getCrawl4AiOutputExtension,
 	formatCrawl4AiTimestamp,
 	getCrawl4AiOutputPath,
+	getTrafilaturaOutputPaths,
+	getRawHtmlSiblingPath,
+	ensureUniqueTrafilaturaOutputPaths,
 	ensureUniqueCrawl4AiOutputPath,
 } from "../extensions/crawl4ai/resolve.ts";
 
@@ -142,6 +146,50 @@ test("getCrawl4AiOutputPath: markdown format uses the .md extension", () => {
 
 	assert.match(path, /\/outputs\/example\.com\/markdown\//);
 	assert.ok(path.endsWith(".md"), `expected .md extension: ${path}`);
+});
+
+// --- Trafilatura output paths ----------------------------------------------
+
+test("getTrafilaturaOutputPaths: keeps extracted and raw HTML together", () => {
+	const date = new Date(2026, 0, 2, 3, 4);
+	const paths = getTrafilaturaOutputPaths(
+		"/tmp/proj",
+		"https://www.example.com/foo",
+		"markdown",
+		date,
+	);
+	assert.match(paths.extractedPath, /\/outputs\/example\.com\/trafilatura\//);
+	assert.ok(paths.extractedPath.endsWith("2026-01-02-03-04-foo.md"));
+	assert.ok(paths.rawHtmlPath.endsWith("2026-01-02-03-04-foo.raw.html"));
+});
+
+test("getTrafilaturaOutputPaths: text extraction uses .txt", () => {
+	const paths = getTrafilaturaOutputPaths(
+		"/tmp/proj",
+		"https://example.com/foo",
+		"text",
+		new Date(2026, 0, 2, 3, 4),
+	);
+	assert.ok(paths.extractedPath.endsWith(".txt"));
+});
+
+test("getRawHtmlSiblingPath: derives a raw artifact beside custom output", () => {
+	assert.equal(getRawHtmlSiblingPath("/tmp/custom/page.md"), "/tmp/custom/page.raw.html");
+});
+
+test("ensureUniqueTrafilaturaOutputPaths: keeps one stem when only raw HTML exists", () => {
+	const directory = "/tmp/pi-crawl4ai-paired-path-test";
+	rmSync(directory, { recursive: true, force: true });
+	mkdirSync(directory, { recursive: true });
+	const paths = {
+		extractedPath: `${directory}/page.md`,
+		rawHtmlPath: `${directory}/page.raw.html`,
+	};
+	writeFileSync(paths.rawHtmlPath, "raw");
+	const unique = ensureUniqueTrafilaturaOutputPaths(paths);
+	assert.notEqual(unique.extractedPath, paths.extractedPath);
+	assert.equal(unique.rawHtmlPath, getRawHtmlSiblingPath(unique.extractedPath));
+	rmSync(directory, { recursive: true, force: true });
 });
 
 // --- ensureUniqueCrawl4AiOutputPath -----------------------------------------

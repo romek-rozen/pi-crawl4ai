@@ -11,7 +11,13 @@ import type { CrawlParamsType } from "./types.js";
 export function buildArgs(params: CrawlParamsType): string[] {
 	const args: string[] = ["crawl"];
 
-	if (params.output_format) args.push("-o", params.output_format);
+	// Trafilatura needs CrawlResult.html, exposed by the CLI's composite `all` JSON.
+	// The public output_format remains independent and controls Trafilatura output.
+	if (params.extractor === "trafilatura") {
+		args.push("-o", "all");
+	} else if (params.output_format) {
+		args.push("-o", params.output_format);
+	}
 	if (params.deep_crawl) args.push("--deep-crawl", params.deep_crawl);
 	if (params.max_pages !== undefined) args.push("--max-pages", String(params.max_pages));
 	if (params.question) args.push("-q", params.question);
@@ -37,7 +43,11 @@ export function buildArgs(params: CrawlParamsType): string[] {
 		args.push("-c", "cache_mode=enabled");
 	}
 
-	if (params.output_file) args.push("-O", params.output_file);
+	// Let Crawl4AI write regular outputs directly. Trafilatura needs the `all`
+	// JSON on stdout, and question mode streams its answer instead of honoring -O.
+	if (params.output_file && params.extractor !== "trafilatura" && !params.question) {
+		args.push("-O", params.output_file);
+	}
 
 	// URL always as the last argument
 	args.push(params.url);

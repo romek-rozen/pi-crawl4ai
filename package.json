@@ -1,8 +1,8 @@
 {
   "name": "pi-crawl4ai",
   "version": "0.1.6",
-  "description": "Crawl4AI extension for pi — web crawling and structured extraction",
-  "keywords": ["pi-package", "crawl4ai", "web-crawling", "data-extraction", "scraping", "markdown"],
+  "description": "Crawl4AI extension for pi with token-efficient Trafilatura extraction",
+  "keywords": ["pi-package", "crawl4ai", "trafilatura", "web-crawling", "data-extraction", "scraping", "markdown"],
   "license": "MIT",
   "author": {
     "name": "Roman",

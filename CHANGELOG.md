@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+- Optional `extractor: "trafilatura"` for token-efficient single-page Markdown or plain-text extraction
+- Controls for Trafilatura links, formatting, images with alt/source fallback, and tables
+- Paired artifact persistence under `.crawl4ai/outputs/<domain>/trafilatura/`: extracted content plus raw Crawl4AI HTML
+- Isolated Trafilatura virtual environment installed by `/crawl4ai-install` to avoid Python dependency conflicts
+- Unit tests for Trafilatura validation, argument mapping, raw-HTML parsing, and artifact paths
+
+### Changed
+- Scraping agent and prompt templates prefer Trafilatura for single-page reading
+- Compress all bundled prompts and agent instructions in English to reduce context usage
+- Trafilatura `output_file` persistence is handled by the extension while regular Crawl4AI outputs continue using direct CLI file output
+- `/crawl4ai-status` reports Trafilatura availability and version
+
 ## [0.1.6] - 2026-08-11
 
 ### Fixed

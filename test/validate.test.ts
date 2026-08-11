@@ -64,3 +64,41 @@ test("default (no output_format) is valid", () => {
 	const err = validateCrawlRequest(params({ url: "https://example.com" }));
 	assert.equal(err, null);
 });
+
+test("Trafilatura accepts single-page Markdown and text", () => {
+	assert.equal(validateCrawlRequest(params({ url: "https://example.com", extractor: "trafilatura" })), null);
+	assert.equal(
+		validateCrawlRequest(params({ url: "https://example.com", extractor: "trafilatura", output_format: "text" })),
+		null,
+	);
+});
+
+test("Trafilatura rejects deep crawl and structured extraction", () => {
+	assert.match(
+		validateCrawlRequest(params({ url: "https://example.com", extractor: "trafilatura", deep_crawl: "bfs" }))!,
+		/single page/,
+	);
+	assert.match(
+		validateCrawlRequest(params({ url: "https://example.com", extractor: "trafilatura", json_extract: "prices" }))!,
+		/cannot be combined/,
+	);
+});
+
+test("text and Trafilatura options require the Trafilatura extractor", () => {
+	assert.match(validateCrawlRequest(params({ url: "https://example.com", output_format: "text" }))!, /requires/);
+	assert.match(validateCrawlRequest(params({ url: "https://example.com", include_links: true }))!, /require/);
+	assert.match(validateCrawlRequest(params({ url: "https://example.com", include_images: true }))!, /require/);
+	assert.match(validateCrawlRequest(params({ url: "https://example.com", include_tables: false }))!, /require/);
+});
+
+test("Trafilatura link/formatting options require Markdown output", () => {
+	assert.match(
+		validateCrawlRequest(params({
+			url: "https://example.com",
+			extractor: "trafilatura",
+			output_format: "text",
+			include_links: true,
+		}))!,
+		/Markdown/,
+	);
+});

@@ -1,27 +1,14 @@
 ---
 name: crawl4ai-scrape-and-extract
-description: Chained workflow — scrape a page to clean markdown, then extract structured data (JSON) from it.
+description: Compactly scrape one page, then extract structured JSON.
 argument-hint: "<URL> <fields to extract>"
 tools: crawl4ai, read, bash
 ---
 
-Scrape the given URL to clean markdown, then run a structured extraction on the same page using the `crawl4ai` tool.
+Process $1 and extract: ${@:2}
 
-URL: $1
-Fields to extract: ${@:2}
+1. Scrape with `extractor: trafilatura`, `output_format: markdown`. Keep formatting and tables; links/images are opt-in. Read the extracted Markdown, not raw HTML.
+2. Crawl the same URL with `output_format: json` and `json_extract: "${@:2}"`, or use `schema_path` + `extraction_config`.
+3. Validate the JSON and return a concise content summary, extracted data, and both artifact paths.
 
-Step 1 — Scrape:
-1. Crawl the URL with `output_format: markdown`, saving to the project outputs
-2. Read the saved output file
-3. Summarize the key content for the user
-
-Step 2 — Extract:
-1. Run `crawl4ai` again on the SAME url with `output_format: json` and `json_extract: "${@:2}"` (or `schema_path` + `extraction_config` for CSS/XPath)
-2. Read the saved output file
-3. Validate and present the extracted structured data
-
-Requirements:
-- `output_format: json` REQUIRES an extraction strategy — provide `json_extract` (LLM prompt) or `schema_path` + `extraction_config` (CSS/XPath)
-- Do NOT use `deep_crawl` — JSON extraction works on single pages only
-- If LLM provider is not configured in Crawl4AI, tell the user to set it up first
-- If `crawl4ai` is not installed, tell the user to run `/crawl4ai-install`
+Do not use deep crawl. If unavailable, suggest `/crawl4ai-install`; report missing LLM configuration clearly.

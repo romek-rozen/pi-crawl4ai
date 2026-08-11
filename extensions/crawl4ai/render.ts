@@ -14,12 +14,13 @@ export function renderCrawlCall(args: Record<string, unknown>, theme: any): Text
 	text += theme.fg("accent", String(args.url ?? "???"));
 	if (args.deep_crawl) text += theme.fg("dim", ` deep=${args.deep_crawl}`);
 	if (args.output_format) text += theme.fg("dim", ` fmt=${args.output_format}`);
+	if (args.extractor) text += theme.fg("dim", ` extractor=${args.extractor}`);
 	return new Text(text, 0, 0);
 }
 
 /** How to display a tool result in the TUI. */
 export function renderCrawlResult(
-	result: { content: Array<{ type: string; text?: string }>; details?: unknown },
+	result: { content: Array<{ type: string; text?: string }>; details?: unknown; isError?: boolean },
 	options: { expanded: boolean; isPartial: boolean },
 	theme: any,
 	_context?: any,
@@ -33,9 +34,10 @@ export function renderCrawlResult(
 		return new Text(theme.fg("dim", "[crawl4ai] No details"), 0, 0);
 	}
 
-	// Execution error
-	if (details.exitCode !== 0) {
-		return new Text(theme.fg("error", `[crawl4ai] Failed (exit ${details.exitCode})`), 0, 0);
+	// Crawl or post-processing error
+	if (result.isError || details.exitCode !== 0 || details.error) {
+		const suffix = details.exitCode !== 0 ? ` (exit ${details.exitCode})` : "";
+		return new Text(theme.fg("error", `[crawl4ai] Failed${suffix}`), 0, 0);
 	}
 
 	// Compact preview — always show only the header + path
@@ -44,6 +46,9 @@ export function renderCrawlResult(
 	const targetPath = details.outputFile ?? details.fullOutputPath;
 	if (targetPath) {
 		text += `\n${theme.fg("dim", targetPath)}`;
+	}
+	if (details.rawHtmlPath) {
+		text += `\n${theme.fg("muted", `raw: ${details.rawHtmlPath}`)}`;
 	}
 
 	// In expanded mode — max 5 preview lines

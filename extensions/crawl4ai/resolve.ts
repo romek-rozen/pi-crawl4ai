@@ -5,7 +5,7 @@
  * and building cache/output paths for Crawl4AI.
  */
 
-import { existsSync } from "node:fs";
+import { accessSync, constants, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, parse } from "node:path";
 import { createHash } from "node:crypto";
@@ -42,6 +42,37 @@ export function findCrwl(cwd: string): string | null {
 	if (existsSync("/tmp/crawl4ai-venv/bin/crwl")) return "/tmp/crawl4ai-venv/bin/crwl";
 
 	return null;
+}
+
+/** Searches for the Trafilatura executable in managed and manual installations. */
+export function findTrafilatura(cwd: string, crwlPath?: string): string | null {
+	const candidates = [
+		process.env.TRAFILATURA_VENV
+			? join(process.env.TRAFILATURA_VENV, "bin", "trafilatura")
+			: null,
+		join(cwd, ".pi", "extensions", "crawl4ai", ".trafilatura-venv", "bin", "trafilatura"),
+		join(homedir(), ".pi", "extensions", "crawl4ai", ".trafilatura-venv", "bin", "trafilatura"),
+		join(homedir(), ".pi", "agent", "extensions", "crawl4ai", ".trafilatura-venv", "bin", "trafilatura"),
+		crwlPath ? join(dirname(crwlPath), "trafilatura") : null,
+	];
+	for (const candidate of candidates) {
+		if (!candidate) continue;
+		try {
+			accessSync(candidate, constants.X_OK);
+			return candidate;
+		} catch {
+			// Keep looking: a stale/non-executable candidate must not mask a valid one.
+		}
+	}
+
+	try {
+		return execSync("which trafilatura", {
+			encoding: "utf-8",
+			stdio: ["pipe", "pipe", "ignore"],
+		}).trim();
+	} catch {
+		return null;
+	}
 }
 
 /** Returns the base directory for Crawl4AI. */
@@ -161,6 +192,53 @@ export function getCrawl4AiOutputPath(
 	const timestamp = formatCrawl4AiTimestamp(date);
 	const urlSlug = getCrawl4AiUrlSlug(url);
 	return join(baseDir, "outputs", domain, formatSlug, `${timestamp}-${urlSlug}.${extension}`);
+}
+
+/** Builds paired Trafilatura extraction and raw-HTML artifact paths. */
+export function getTrafilaturaOutputPaths(
+	cwd: string,
+	url: string,
+	format: "markdown" | "text" = "markdown",
+	date = new Date(),
+): { extractedPath: string; rawHtmlPath: string } {
+	const directory = join(
+		getCrawl4AiFolder(cwd),
+		"outputs",
+		getCrawl4AiDomainSlug(url),
+		"trafilatura",
+	);
+	const stem = `${formatCrawl4AiTimestamp(date)}-${getCrawl4AiUrlSlug(url)}`;
+	return {
+		extractedPath: join(directory, `${stem}.${format === "text" ? "txt" : "md"}`),
+		rawHtmlPath: join(directory, `${stem}.raw.html`),
+	};
+}
+
+/** Returns the raw-HTML sibling path for a custom extraction output path. */
+export function getRawHtmlSiblingPath(extractedPath: string): string {
+	const parsed = parse(extractedPath);
+	return join(parsed.dir, `${parsed.name}.raw.html`);
+}
+
+/** Keeps a Trafilatura artifact pair on one shared, collision-free stem. */
+export function ensureUniqueTrafilaturaOutputPaths(paths: {
+	extractedPath: string;
+	rawHtmlPath: string;
+}): { extractedPath: string; rawHtmlPath: string } {
+	if (!existsSync(paths.extractedPath) && !existsSync(paths.rawHtmlPath)) return paths;
+
+	const parsed = parse(paths.extractedPath);
+	const hash = createHash("sha1").update(paths.extractedPath).digest("hex").slice(0, 6);
+	let counter = 1;
+	while (true) {
+		const suffix = counter === 1 ? `-${hash}` : `-${hash}-${counter}`;
+		const extractedPath = join(parsed.dir, `${parsed.name}${suffix}${parsed.ext}`);
+		const rawHtmlPath = getRawHtmlSiblingPath(extractedPath);
+		if (!existsSync(extractedPath) && !existsSync(rawHtmlPath)) {
+			return { extractedPath, rawHtmlPath };
+		}
+		counter += 1;
+	}
 }
 
 /** Ensures a unique path if the file already exists. */

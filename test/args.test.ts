@@ -79,9 +79,19 @@ test("browser_config maps to -b value", () => {
 	assert.equal(valueAfter(args, "-b"), "browser.yml");
 });
 
-test("output_file maps to -O value", () => {
+test("regular output_file maps to -O for direct Crawl4AI persistence", () => {
 	const args = buildArgs(p({ url: URL, output_file: "out.md" }));
 	assert.equal(valueAfter(args, "-O"), "out.md");
+});
+
+test("Trafilatura and question workflows keep stdout and do not pass -O", () => {
+	assert.ok(!buildArgs(p({ url: URL, extractor: "trafilatura", output_file: "out.md" })).includes("-O"));
+	assert.ok(!buildArgs(p({ url: URL, question: "Why?", output_file: "out.md" })).includes("-O"));
+});
+
+test("Trafilatura forces Crawl4AI composite output to obtain raw HTML", () => {
+	const args = buildArgs(p({ url: URL, extractor: "trafilatura", output_format: "text" }));
+	assert.equal(valueAfter(args, "-o"), "all");
 });
 
 test("cache default: forces -c cache_mode=enabled", () => {
@@ -139,5 +149,5 @@ test("all flags together: crawl first, url last, each flag maps correctly", () =
 	assert.equal(valueAfter(args, "-e"), "e.yml");
 	assert.equal(valueAfter(args, "-b"), "b.yml");
 	assert.equal(valueAfter(args, "-c"), "word_count_threshold=3,cache_mode=enabled");
-	assert.equal(valueAfter(args, "-O"), "o.md");
+	assert.ok(!args.includes("-O"), "question mode must keep its streamed answer on stdout");
 });

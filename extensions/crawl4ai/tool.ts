@@ -20,8 +20,18 @@ import { buildArgs } from "./args.js";
 import { runCrawl } from "./runner.js";
 import {
 	ensureUniqueCrawl4AiOutputPath,
+	ensureUniqueTrafilaturaOutputPaths,
+	findTrafilatura,
 	getCrawl4AiOutputPath,
+	getRawHtmlSiblingPath,
+	getTrafilaturaOutputPaths,
 } from "./resolve.js";
+import {
+	appendImageReferences,
+	appendMarkdownTables,
+	parseCrawlDocument,
+	runTrafilatura,
+} from "./trafilatura.js";
 import { renderCrawlCall, renderCrawlResult } from "./render.js";
 
 /** Tool metadata — used in `pi.registerTool()`. */
@@ -29,14 +39,18 @@ export const crawlToolMeta = {
 	name: "crawl4ai" as const,
 	label: "Crawl4AI" as const,
 	description:
-		"[crawl4ai] Crawl a website and extract clean Markdown/JSON. " +
-		"Full output is saved to ./.crawl4ai/outputs/; inline response only points to the file path.",
+		"[crawl4ai] Crawl a website and extract clean Markdown/text/JSON, optionally with Trafilatura. " +
+		"Full output is saved to ./.crawl4ai/outputs/; inline response only points to file paths.",
 	promptSnippet:
-		"crawl4ai — Crawl a URL and extract clean markdown, JSON, or structured data.",
+		"crawl4ai — Crawl a URL and extract compact markdown/text with Trafilatura, or use Crawl4AI JSON extraction.",
 	promptGuidelines: [
 		"Use crawl4ai when the user wants to scrape, crawl, or extract content from a live website.",
 		"Full output is saved to disk in ./.crawl4ai/outputs/<domain>/<format>/.",
-		"Prefer markdown output for reading content; use json_extract or schema_path for structured data extraction.",
+		"Prefer extractor=trafilatura with markdown or text for token-efficient single-page reading.",
+		"Trafilatura preserves both raw HTML and extracted output under the trafilatura folder.",
+		"Trafilatura preserves Markdown formatting and tables by default to retain document structure.",
+		"Use include_links/include_images when useful; set include_tables=false only when tables are unnecessary.",
+		"Use json_extract or schema_path for structured data extraction.",
 		"json output requires extraction: use json_extract (LLM) or schema_path + extraction_config (CSS/XPath).",
 		"Do not use output_format=json without an extraction strategy; return a clear error instead.",
 		"Set deep_crawl + max_pages for crawling multiple linked pages (markdown/all only).",
@@ -153,6 +167,22 @@ export async function executeCrawl(
 		return { content: [{ type: "text", text: msg }], details, isError: true };
 	}
 
+	// For regular non-question output_file requests, Crawl4AI wrote the artifact
+	// directly and intentionally left stdout empty.
+	if (params.output_file && params.extractor !== "trafilatura" && !params.question) {
+		details.fullOutputPath = params.output_file;
+		return {
+			content: [{
+				type: "text",
+				text:
+					"[crawl4ai] Crawl complete.\n\n" +
+					`[crawl4ai] Full output saved to: ${params.output_file}\n` +
+					"[crawl4ai] Use the read tool if you want to inspect the file.",
+			}],
+			details: { ...details, outputFile: params.output_file },
+		};
+	}
+
 	// Empty result
 	if (!result.stdout.trim()) {
 		return {
@@ -161,7 +191,135 @@ export async function executeCrawl(
 		};
 	}
 
-	// ── Save to project directory ──
+	// ── Optional Trafilatura extraction ──
+	if (params.extractor === "trafilatura") {
+		let rawHtml: string;
+		let images: Array<{ src: string; alt: string }>;
+		let crawlMarkdown: string;
+		try {
+			const document = parseCrawlDocument(result.stdout);
+			rawHtml = document.html;
+			images = document.images;
+			crawlMarkdown = document.crawlMarkdown;
+		} catch (error: any) {
+			return {
+				content: [{ type: "text", text: `[crawl4ai] ${error.message}` }],
+				details: { ...details, extractor: "trafilatura" },
+				isError: true,
+			};
+		}
+
+		const format = params.output_format === "text" ? "text" : "markdown";
+		const defaultPaths = getTrafilaturaOutputPaths(_ctx.cwd, params.url, format);
+		let extractedPath: string;
+		let rawHtmlPath: string;
+		if (params.output_file) {
+			extractedPath = params.output_file;
+			rawHtmlPath = getRawHtmlSiblingPath(extractedPath);
+			await mkdir(dirname(rawHtmlPath), { recursive: true });
+			await withFileMutationQueue(rawHtmlPath, async () => {
+				await writeFile(rawHtmlPath, rawHtml, "utf8");
+			});
+		} else {
+			// Allocate and write the raw artifact under one directory-scoped queue.
+			// The raw file reserves the shared stem before another crawl can choose it.
+			const allocated = await withFileMutationQueue(
+				join(dirname(defaultPaths.extractedPath), ".trafilatura-output-allocation"),
+				async () => {
+					const paths = ensureUniqueTrafilaturaOutputPaths(defaultPaths);
+					await mkdir(dirname(paths.rawHtmlPath), { recursive: true });
+					await writeFile(paths.rawHtmlPath, rawHtml, "utf8");
+					return paths;
+				},
+			);
+			extractedPath = allocated.extractedPath;
+			rawHtmlPath = allocated.rawHtmlPath;
+		}
+		details.rawHtmlPath = rawHtmlPath;
+		details.extractor = "trafilatura";
+
+		const trafilaturaPath = findTrafilatura(_ctx.cwd, crwlPath);
+		if (!trafilaturaPath) {
+			return {
+				content: [{
+					type: "text",
+					text:
+						"[crawl4ai] Trafilatura is not installed. Run /crawl4ai-install.\n" +
+						`[crawl4ai] Raw HTML was preserved at: ${rawHtmlPath}`,
+				}],
+				details,
+				isError: true,
+			};
+		}
+
+		let extracted;
+		try {
+			extracted = await runTrafilatura(
+				trafilaturaPath,
+				rawHtml,
+				format,
+				params.include_links ?? false,
+				params.include_formatting ?? (format === "markdown"),
+				params.include_images ?? false,
+				params.include_tables ?? true,
+				timeoutSec,
+				signal,
+			);
+		} catch (error: any) {
+			return {
+				content: [{
+					type: "text",
+					text: `[crawl4ai] Trafilatura failed: ${error.message}\nRaw HTML: ${rawHtmlPath}`,
+				}],
+				details,
+				isError: true,
+			};
+		}
+
+		if (extracted.exitCode !== 0 || !extracted.stdout.trim()) {
+			const reason = extracted.exitCode !== 0
+				? `exited with code ${extracted.exitCode}`
+				: "returned no extractable content";
+			const stderr = extracted.stderr.trim();
+			return {
+				content: [{
+					type: "text",
+					text:
+						`[crawl4ai] Trafilatura ${reason}.` +
+						(stderr ? `\n\nSTDERR:\n${stderr.slice(0, 2000)}` : "") +
+						`\n\nRaw HTML: ${rawHtmlPath}`,
+				}],
+				details: { ...details, stderr: extracted.stderr || details.stderr },
+				isError: true,
+			};
+		}
+
+		let extractedOutput = params.include_tables ?? true
+			? appendMarkdownTables(extracted.stdout, crawlMarkdown, format)
+			: extracted.stdout;
+		if (params.include_images) {
+			extractedOutput = appendImageReferences(extractedOutput, images, params.url, format);
+		}
+		await mkdir(dirname(extractedPath), { recursive: true });
+		await withFileMutationQueue(extractedPath, async () => {
+			await writeFile(extractedPath, extractedOutput, "utf8");
+		});
+		details.fullOutputPath = extractedPath;
+
+		return {
+			content: [{
+				type: "text",
+				text:
+					`[crawl4ai] Crawl + Trafilatura extraction complete — ${extractedOutput.split("\n").length} lines.\n\n` +
+					`[crawl4ai] Extracted output: ${extractedPath}\n` +
+					`[crawl4ai] Raw HTML: ${rawHtmlPath}\n` +
+					"[crawl4ai] Use the read tool only if you need to inspect a file.",
+			}],
+			details: { ...details, outputFile: params.output_file },
+		};
+	}
+
+	// ── Save regular Crawl4AI output to project directory ──
 	const { path } = await saveToProjectOutput(
 		_ctx.cwd,
 		params.url,

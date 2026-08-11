@@ -1,19 +1,12 @@
 ---
 name: crawl4ai-scrape
-description: Scrape a single web page and extract clean markdown content.
+description: Scrape one page into compact Markdown or text.
 argument-hint: "<URL> [instructions]"
 tools: crawl4ai, read, bash
 ---
 
-Scrape the given URL using the `crawl4ai` tool with `output_format: markdown`.
+Scrape $1 according to: ${@:2}
 
-URL: $1
-Instructions: ${@:2}
+Use `extractor: trafilatura` with `output_format: markdown`; use `text` only when minimum size is requested. Keep formatting and tables enabled. Enable links or images only when needed.
 
-Steps:
-1. Crawl the URL with `output_format: markdown` (or `markdown-fit` if compact output requested)
-2. Read the saved output file
-3. Summarize key content for the user
-
-Do NOT use `deep_crawl` or `json_extract` — this is a single-page scrape only.
-If `crawl4ai` is not installed, tell the user to run `/crawl4ai-install`.
+Read the extracted artifact, not raw HTML, then return a concise summary and path. Do not use deep crawl or JSON extraction. If unavailable, suggest `/crawl4ai-install`.
