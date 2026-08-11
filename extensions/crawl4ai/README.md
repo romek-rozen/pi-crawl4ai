@@ -59,7 +59,7 @@ The LLM sees a tool named `crawl4ai` with these parameters:
 |---------|---------|
 | `/crawl4ai-install` | Create local venv and install `crawl4ai` |
 | `/crawl4ai-test` | Run a smoke test crawl on example.com |
-| `/crawl4ai-status` | Show resolved binary path and version |
+| `/crawl4ai-status` | Show binary path and health check; keep a compact status in the footer |
 | `/crawl4ai-clear-cache` | Remove local `.crawl4ai/cache` and `.crawl4ai/robots` |
 
 ## LLM Extraction Setup
@@ -73,7 +73,7 @@ The inline response only points to the saved file path; use `read` to inspect co
 
 ## Troubleshooting
 
-- **"Binary not found"** → run `/crawl4ai-install` or set `CRAWL4AI_VENV=/path/to/venv` before starting pi.
+- **"Binary not found"** → the extension automatically checks project-local and `~/.pi/extensions/crawl4ai/.venv` installations; otherwise run `/crawl4ai-install` or set `CRAWL4AI_VENV=/path/to/venv` before starting pi.
 - **Browser errors** → run `/crawl4ai-test` to verify crawl4ai works.
 - **Stale cache** → run `/crawl4ai-clear-cache` to remove local cache folders.
 - **No cache files** → check whether the call used `bypass_cache`; the extension now defaults to `cache_mode=enabled`.

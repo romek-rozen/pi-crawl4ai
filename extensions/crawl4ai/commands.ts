@@ -10,7 +10,7 @@
  */
 
 import { join, dirname, resolve } from "node:path";
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, rmSync, symlinkSync, readlinkSync, unlinkSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
@@ -100,23 +100,40 @@ export function registerCommands(pi: ExtensionAPI, onInstall: (path: string) => 
 	});
 
 	pi.registerCommand("crawl4ai-status", {
-		description: "[crawl4ai] Show binary path and version",
+		description: "[crawl4ai] Show installation status and binary path",
 		handler: async (_args, ctx) => {
+			ctx.ui.notify("[crawl4ai] Checking installation…", "info");
+
 			const path = findCrwl(ctx.cwd);
 			if (!path) {
-				ctx.ui.notify("[crawl4ai] Binary not found.", "warning");
+				ctx.ui.setStatus("crawl4ai", "crawl4ai: missing");
+				ctx.ui.notify(
+					"[crawl4ai] Status: NOT INSTALLED\n" +
+					"Run /crawl4ai-install or set CRAWL4AI_VENV before starting pi.",
+					"warning",
+				);
 				return;
 			}
+
 			try {
-				const help = execSync(`${path} --help`, {
+				const help = execFileSync(path, ["--help"], {
 					encoding: "utf-8",
-					stdio: ["pipe", "pipe", "ignore"],
+					stdio: ["pipe", "pipe", "pipe"],
+					timeout: 10000,
+					env: getVenvEnv(path, ctx.cwd),
 				});
-				const firstLine = help.split("\n")[0];
-				ctx.ui.notify(`[crawl4ai] Binary: ${path}`, "info");
-				ctx.ui.notify(`[crawl4ai] ${firstLine}`, "info");
-			} catch {
-				ctx.ui.notify(`[crawl4ai] Binary: ${path} (version check failed)`, "info");
+				const summary = help.split("\n").find((line) => line.trim())?.trim() || "crwl is responding";
+				ctx.ui.setStatus("crawl4ai", "crawl4ai: ready");
+				ctx.ui.notify(
+					`[crawl4ai] Status: READY\nBinary: ${path}\nWorking directory: ${ctx.cwd}\nCheck: ${summary}`,
+					"info",
+				);
+			} catch (err: any) {
+				ctx.ui.setStatus("crawl4ai", "crawl4ai: error");
+				ctx.ui.notify(
+					`[crawl4ai] Status: ERROR\nBinary: ${path}\nCheck failed: ${err.message}`,
+					"error",
+				);
 			}
 		},
 	});

@@ -39,6 +39,7 @@ pi install git:github.com/romek-rozen/pi-crawl4ai
    /crawl4ai-status
    /crawl4ai-test
    ```
+   The status command reports the detected binary and health check, and keeps a compact `crawl4ai: ready`, `missing`, or `error` indicator in the footer.
 
 3. **Set up agents** (optional, for subagent workflows):
    ```
@@ -116,7 +117,7 @@ Use a chain: first have crawl4ai-scrape get the page at https://shop.example.com
 |---------|---------|
 | `/crawl4ai-install` | Create local venv and install `crawl4ai` |
 | `/crawl4ai-test` | Run a smoke test crawl on example.com |
-| `/crawl4ai-status` | Show resolved binary path and version |
+| `/crawl4ai-status` | Show binary path and health check; keep a compact status in the footer |
 | `/crawl4ai-clear-cache` | Remove local `.crawl4ai/cache` and `.crawl4ai/robots` |
 | `/crawl4ai-setup-agents` | Symlink agents to `~/.pi/agent/agents/` for use with subagent/run |
 
@@ -177,7 +178,7 @@ The extension runs inside pi’s extension loader. After modifying source, reloa
 
 ## Troubleshooting
 
-- **"Binary not found"** → run `/crawl4ai-install` or set `CRAWL4AI_VENV=/path/to/venv`
+- **"Binary not found"** → the extension automatically checks project-local and `~/.pi/extensions/crawl4ai/.venv` installations; otherwise run `/crawl4ai-install` or set `CRAWL4AI_VENV=/path/to/venv`
 - **"No default LLM provider configured"** → configure a provider in Crawl4AI before using `json_extract`
 - **"the JSON object must be str, bytes or bytearray, not NoneType"** → usually missing `extraction_config` when using `schema_path`, or the page has no matching content
 - **Stale cache** → run `/crawl4ai-clear-cache`

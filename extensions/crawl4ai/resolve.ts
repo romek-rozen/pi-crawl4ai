@@ -23,18 +23,22 @@ export function findCrwl(cwd: string): string | null {
 	const projectVenv = join(cwd, ".pi", "extensions", "crawl4ai", ".venv", "bin", "crwl");
 	if (existsSync(projectVenv)) return projectVenv;
 
-	// 3. Global user venv (legacy / fallback)
-	const globalVenv = join(homedir(), ".pi", "agent", "extensions", "crawl4ai", ".venv", "bin", "crwl");
-	if (existsSync(globalVenv)) return globalVenv;
+	// 3. User-level pi extension venv
+	const userVenv = join(homedir(), ".pi", "extensions", "crawl4ai", ".venv", "bin", "crwl");
+	if (existsSync(userVenv)) return userVenv;
 
-	// 4. Whatever is available in PATH
+	// 4. Legacy user venv location
+	const legacyUserVenv = join(homedir(), ".pi", "agent", "extensions", "crawl4ai", ".venv", "bin", "crwl");
+	if (existsSync(legacyUserVenv)) return legacyUserVenv;
+
+	// 5. Whatever is available in PATH
 	try {
 		return execSync("which crwl", { encoding: "utf-8", stdio: ["pipe", "pipe", "ignore"] }).trim();
 	} catch {
 		/* ignore */
 	}
 
-	// 5. Temporary venv from a test installation
+	// 6. Temporary venv from a test installation
 	if (existsSync("/tmp/crawl4ai-venv/bin/crwl")) return "/tmp/crawl4ai-venv/bin/crwl";
 
 	return null;
