@@ -91,6 +91,16 @@ test("text and Trafilatura options require the Trafilatura extractor", () => {
 	assert.match(validateCrawlRequest(params({ url: "https://example.com", include_tables: false }))!, /require/);
 });
 
+test("BM25 validates query, threshold, format, and incompatible modes", () => {
+	assert.equal(validateCrawlRequest(params({ url: "https://example.com", bm25_query: "extension API" })), null);
+	assert.equal(validateCrawlRequest(params({ url: "https://example.com", extractor: "trafilatura", output_format: "text", bm25_query: "API" })), null);
+	assert.match(validateCrawlRequest(params({ url: "https://example.com", bm25_threshold: 1 }))!, /requires/);
+	assert.match(validateCrawlRequest(params({ url: "https://example.com", bm25_query: " " }))!, /must not be empty/);
+	assert.match(validateCrawlRequest(params({ url: "https://example.com", bm25_query: "API", bm25_threshold: -1 }))!, /greater than or equal/);
+	assert.match(validateCrawlRequest(params({ url: "https://example.com", bm25_query: "API", output_format: "json" }))!, /Markdown/);
+	assert.match(validateCrawlRequest(params({ url: "https://example.com", bm25_query: "API", deep_crawl: "bfs" }))!, /single page/);
+});
+
 test("Trafilatura link/formatting options require Markdown output", () => {
 	assert.match(
 		validateCrawlRequest(params({

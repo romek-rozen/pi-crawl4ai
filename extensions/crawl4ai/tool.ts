@@ -33,6 +33,7 @@ import {
 	runTrafilatura,
 } from "./trafilatura.js";
 import { renderCrawlCall, renderCrawlResult } from "./render.js";
+import { filterWithBm25 } from "./bm25.js";
 
 /** Tool metadata — used in `pi.registerTool()`. */
 export const crawlToolMeta = {
@@ -50,6 +51,7 @@ export const crawlToolMeta = {
 		"Trafilatura preserves both raw HTML and extracted output under the trafilatura folder.",
 		"Trafilatura preserves Markdown formatting and tables by default to retain document structure.",
 		"Use include_links/include_images when useful; set include_tables=false only when tables are unnecessary.",
+		"Use bm25_query (and optionally bm25_threshold) for query-focused Markdown/text artifacts.",
 		"Use json_extract or schema_path for structured data extraction.",
 		"json output requires extraction: use json_extract (LLM) or schema_path + extraction_config (CSS/XPath).",
 		"Do not use output_format=json without an extraction strategy; return a clear error instead.",
@@ -169,7 +171,7 @@ export async function executeCrawl(
 
 	// For regular non-question output_file requests, Crawl4AI wrote the artifact
 	// directly and intentionally left stdout empty.
-	if (params.output_file && params.extractor !== "trafilatura" && !params.question) {
+	if (params.output_file && params.extractor !== "trafilatura" && !params.question && !params.bm25_query) {
 		details.fullOutputPath = params.output_file;
 		return {
 			content: [{
@@ -300,6 +302,17 @@ export async function executeCrawl(
 		if (params.include_images) {
 			extractedOutput = appendImageReferences(extractedOutput, images, params.url, format);
 		}
+		let bm25Summary = "";
+		if (params.bm25_query?.trim()) {
+			const filtered = filterWithBm25(
+				extractedOutput,
+				params.bm25_query,
+				params.bm25_threshold ?? 1,
+				format,
+			);
+			extractedOutput = filtered.content;
+			bm25Summary = ` BM25 retained ${filtered.matchedChunks}/${filtered.totalChunks} structural chunks.`;
+		}
 		await mkdir(dirname(extractedPath), { recursive: true });
 		await withFileMutationQueue(extractedPath, async () => {
 			await writeFile(extractedPath, extractedOutput, "utf8");
@@ -310,7 +323,7 @@ export async function executeCrawl(
 			content: [{
 				type: "text",
 				text:
-					`[crawl4ai] Crawl + Trafilatura extraction complete — ${extractedOutput.split("\n").length} lines.\n\n` +
+					`[crawl4ai] Crawl + Trafilatura extraction complete — ${extractedOutput ? extractedOutput.split("\n").length : 0} lines.${bm25Summary}\n\n` +
 					`[crawl4ai] Extracted output: ${extractedPath}\n` +
 					`[crawl4ai] Raw HTML: ${rawHtmlPath}\n` +
 					"[crawl4ai] Use the read tool only if you need to inspect a file.",
@@ -319,18 +332,25 @@ export async function executeCrawl(
 		};
 	}
 
-	// ── Save regular Crawl4AI output to project directory ──
+	// ── Optional BM25 filtering and regular output saving ──
+	let output = result.stdout;
+	let bm25Summary = "";
+	if (params.bm25_query?.trim()) {
+		const filtered = filterWithBm25(output, params.bm25_query, params.bm25_threshold ?? 1, "markdown");
+		output = filtered.content;
+		bm25Summary = ` BM25 retained ${filtered.matchedChunks}/${filtered.totalChunks} structural chunks.`;
+	}
 	const { path } = await saveToProjectOutput(
 		_ctx.cwd,
 		params.url,
-		result.stdout,
+		output,
 		params.output_format,
 		params.output_file,
 	);
 	details.fullOutputPath = path;
 
 	const contentText =
-		`[crawl4ai] Crawl complete — ${result.stdout.split("\n").length} lines.\n\n` +
+		`[crawl4ai] Crawl complete — ${output ? output.split("\n").length : 0} lines.${bm25Summary}\n\n` +
 		`[crawl4ai] Full output saved to: ${path}\n` +
 		`[crawl4ai] Use the read tool if you want to inspect the file.`;
 

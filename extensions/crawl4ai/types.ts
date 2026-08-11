@@ -42,6 +42,12 @@ export const CrawlParams = Type.Object({
 			description: "Trafilatura: preserve tables (disable to reduce output)",
 		}),
 	),
+	bm25_query: Type.Optional(
+		Type.String({ description: "Keep only structural content chunks relevant to this query using BM25" }),
+	),
+	bm25_threshold: Type.Optional(
+		Type.Number({ default: 1, minimum: 0, description: "Minimum BM25 score for a chunk (default 1.0)" }),
+	),
 	deep_crawl: Type.Optional(
 		StringEnum(["bfs", "dfs", "best-first"] as const),
 	),

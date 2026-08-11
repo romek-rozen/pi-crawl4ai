@@ -19,6 +19,28 @@ import type { CrawlParamsType } from "./types.js";
  * request is invalid, or `null` if it is safe to run.
  */
 export function validateCrawlRequest(params: CrawlParamsType): string | null {
+	const bm25Query = params.bm25_query?.trim();
+	if (params.bm25_threshold !== undefined && !bm25Query) {
+		return "bm25_threshold requires a non-empty bm25_query.";
+	}
+	if (params.bm25_threshold !== undefined && (!Number.isFinite(params.bm25_threshold) || params.bm25_threshold < 0)) {
+		return "bm25_threshold must be a finite number greater than or equal to 0.";
+	}
+	if (params.bm25_query !== undefined && !bm25Query) {
+		return "bm25_query must not be empty.";
+	}
+	if (bm25Query) {
+		if (params.question || params.json_extract || params.schema_path || params.extraction_config) {
+			return "bm25_query cannot be combined with question or structured JSON extraction.";
+		}
+		if (params.deep_crawl) {
+			return "bm25_query currently supports a single page only; deep_crawl is not supported.";
+		}
+		if (params.output_format && !["markdown", "markdown-fit", "md", "md-fit", "text"].includes(params.output_format)) {
+			return "bm25_query supports Markdown or Trafilatura text output only.";
+		}
+	}
+
 	if (params.extractor === "trafilatura") {
 		if (params.deep_crawl) {
 			return "extractor=trafilatura currently supports a single page only; deep_crawl is not supported.";

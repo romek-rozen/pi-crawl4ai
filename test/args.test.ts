@@ -84,9 +84,10 @@ test("regular output_file maps to -O for direct Crawl4AI persistence", () => {
 	assert.equal(valueAfter(args, "-O"), "out.md");
 });
 
-test("Trafilatura and question workflows keep stdout and do not pass -O", () => {
+test("Trafilatura, question, and BM25 workflows keep stdout and do not pass -O", () => {
 	assert.ok(!buildArgs(p({ url: URL, extractor: "trafilatura", output_file: "out.md" })).includes("-O"));
 	assert.ok(!buildArgs(p({ url: URL, question: "Why?", output_file: "out.md" })).includes("-O"));
+	assert.ok(!buildArgs(p({ url: URL, bm25_query: "API", output_file: "out.md" })).includes("-O"));
 });
 
 test("Trafilatura forces Crawl4AI composite output to obtain raw HTML", () => {

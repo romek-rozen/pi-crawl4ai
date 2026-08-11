@@ -45,7 +45,7 @@ export function buildArgs(params: CrawlParamsType): string[] {
 
 	// Let Crawl4AI write regular outputs directly. Trafilatura needs the `all`
 	// JSON on stdout, and question mode streams its answer instead of honoring -O.
-	if (params.output_file && params.extractor !== "trafilatura" && !params.question) {
+	if (params.output_file && params.extractor !== "trafilatura" && !params.question && !params.bm25_query) {
 		args.push("-O", params.output_file);
 	}
 

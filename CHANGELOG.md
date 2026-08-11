@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] - 2026-08-11
+
+### Added
+- Query-aware local BM25 filtering for regular Crawl4AI Markdown and Trafilatura Markdown/text via `bm25_query` and `bm25_threshold`
+- Structural chunk filtering that preserves selected headings, links, image references, and tables
+
 ## [0.2.0] - 2026-08-11
 
 ### Added

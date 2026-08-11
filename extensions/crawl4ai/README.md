@@ -49,7 +49,9 @@ The LLM sees a tool named `crawl4ai` with these parameters:
 - `include_formatting` — preserve Markdown headings/emphasis (on by default for Markdown)
 - `include_images` — include detected images with alt text and resolved source URLs (off by default)
 - `include_tables` — preserve tables (on by default; disable for smaller output)
-- `deep_crawl` — `bfs`, `dfs`, or `best-first` (not with Trafilatura)
+- `bm25_query` — keep structural Markdown/text chunks relevant to a query
+- `bm25_threshold` — minimum BM25 score (default `1.0`)
+- `deep_crawl` — `bfs`, `dfs`, or `best-first` (not with Trafilatura or BM25)
 - `max_pages` — limit for deep crawl
 - `question` — natural-language question about the page
 - `json_extract` — LLM extraction prompt *(requires LLM provider configured in crawl4ai)*
@@ -83,6 +85,10 @@ Both artifacts are retained:
 Plain text uses `.txt`. With a custom `output_file`, raw HTML is written beside it as `<name>.raw.html`. Markdown formatting and tables are retained by default because they carry document context. Links and images are opt-in. The extension restores GFM table structure from Crawl4AI Markdown when Trafilatura flattens cells. `include_images=true` enables Trafilatura image extraction and supplements pruned images from Crawl4AI metadata, preserving their `alt` text and resolved source URL. Trafilatura does not support `deep_crawl`, questions, or structured extraction in the same request. The inline tool result contains paths only.
 
 See the root README for a documented `https://pi.dev/` comparison.
+
+## BM25 relevance filtering
+
+Set `bm25_query` to rank structural sections and save only chunks meeting `bm25_threshold` (default `1.0`). It works on regular Crawl4AI Markdown or after Trafilatura extraction; the latter is recommended for query-focused, token-efficient reading. Selected Markdown sections preserve headings, links, images, and complete table blocks. Empty matches produce an empty saved artifact. BM25 is single-page only and cannot be combined with questions or structured JSON extraction.
 
 ## LLM Extraction Setup
 
