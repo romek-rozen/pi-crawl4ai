@@ -1,6 +1,6 @@
 {
   "name": "pi-crawl4ai",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Crawl4AI extension for pi with token-efficient Trafilatura extraction",
   "keywords": [
     "pi-package",

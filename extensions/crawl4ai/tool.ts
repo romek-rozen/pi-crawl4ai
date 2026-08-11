@@ -10,7 +10,7 @@
  */
 
 import { mkdir, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { withFileMutationQueue } from "@earendil-works/pi-coding-agent";
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
 
@@ -136,6 +136,16 @@ export async function executeCrawl(
 
 	const args = buildArgs(params);
 	const timeoutSec = params.timeout ?? 60;
+
+	// Crawl4AI writes regular output_file artifacts itself, so ensure a nested
+	// destination exists before spawning it. Extension-managed modes already
+	// create their parent directories when saving.
+	if (params.output_file && params.extractor !== "trafilatura" && !params.question && !params.bm25_query) {
+		const targetPath = isAbsolute(params.output_file)
+			? params.output_file
+			: resolve(_ctx.cwd, params.output_file);
+		await mkdir(dirname(targetPath), { recursive: true });
+	}
 
 	onUpdate?.({
 		content: [{ type: "text", text: `[crawl4ai] Starting crawl of ${params.url} …` }],

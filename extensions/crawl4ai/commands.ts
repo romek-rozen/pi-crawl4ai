@@ -9,10 +9,11 @@
  *   /crawl4ai-setup-agents  – symlinks agent definitions for use with subagent/run
  */
 
-import { join, dirname, resolve } from "node:path";
+import { join, dirname, isAbsolute, resolve } from "node:path";
 import { execFileSync, execSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, rmSync, symlinkSync, readlinkSync, unlinkSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { homedir } from "node:os";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { getAgentDir } from "@earendil-works/pi-coding-agent";
 import { findCrwl, findTrafilatura, getCrawl4AiFolder, getVenvEnv } from "./resolve.js";
@@ -25,10 +26,53 @@ import { findCrwl, findTrafilatura, getCrawl4AiFolder, getVenvEnv } from "./reso
  */
 export function registerCommands(pi: ExtensionAPI, onInstall: (path: string) => void) {
 	pi.registerCommand("crawl4ai-install", {
-		description: "[crawl4ai] Install crawl4ai into a local venv (project-local)",
-		handler: async (_args, ctx) => {
-			const venvDir = join(ctx.cwd, ".pi", "extensions", "crawl4ai", ".venv");
+		description: "[crawl4ai] Install/update Crawl4AI + Trafilatura (project, user, or custom scope)",
+		handler: async (args, ctx) => {
+			const requested = args.trim();
+			let installRoot = join(ctx.cwd, ".pi", "extensions", "crawl4ai");
+			let scopeLabel = "project";
+
+			if (requested === "project") {
+				installRoot = join(ctx.cwd, ".pi", "extensions", "crawl4ai");
+				scopeLabel = "project";
+			} else if (requested === "user" || requested === "global") {
+				installRoot = join(homedir(), ".pi", "extensions", "crawl4ai");
+				scopeLabel = "user";
+			} else if (requested) {
+				installRoot = isAbsolute(requested) ? requested : resolve(ctx.cwd, requested);
+				scopeLabel = "custom";
+			} else {
+				if (!ctx.hasUI) {
+					ctx.ui.notify(
+						"[crawl4ai] Choose a scope: /crawl4ai-install project, /crawl4ai-install user, or /crawl4ai-install <directory>.",
+						"warning",
+					);
+					return;
+				}
+				const choice = await ctx.ui.select("Install Crawl4AI + Trafilatura:", [
+					"Project — current repository only",
+					"User — shared by all projects",
+					"Custom — choose an installation directory",
+				]);
+				if (!choice) return;
+				if (choice.startsWith("Project")) {
+					installRoot = join(ctx.cwd, ".pi", "extensions", "crawl4ai");
+					scopeLabel = "project";
+				} else if (choice.startsWith("User")) {
+					installRoot = join(homedir(), ".pi", "extensions", "crawl4ai");
+					scopeLabel = "user";
+				} else {
+					const custom = await ctx.ui.input("Custom installation directory:", "/absolute/path/crawl4ai");
+					if (!custom?.trim()) return;
+					installRoot = isAbsolute(custom.trim()) ? custom.trim() : resolve(ctx.cwd, custom.trim());
+					scopeLabel = "custom";
+				}
+			}
+
+			const venvDir = join(installRoot, ".venv");
 			const python = process.env.PI_PYTHON || "python3";
+
+			ctx.ui.notify(`[crawl4ai] Installing in ${scopeLabel} scope: ${installRoot}`, "info");
 
 			ctx.ui.notify("[crawl4ai] Creating venv…", "info");
 			try {
@@ -49,7 +93,7 @@ export function registerCommands(pi: ExtensionAPI, onInstall: (path: string) => 
 
 			// Isolate Trafilatura because current releases can require a different
 			// lxml major version than Crawl4AI.
-			const trafilaturaVenvDir = join(ctx.cwd, ".pi", "extensions", "crawl4ai", ".trafilatura-venv");
+			const trafilaturaVenvDir = join(installRoot, ".trafilatura-venv");
 			ctx.ui.notify("[crawl4ai] Installing Trafilatura in an isolated venv…", "info");
 			try {
 				execFileSync(python, ["-m", "venv", trafilaturaVenvDir], { stdio: "inherit" });
@@ -67,7 +111,13 @@ export function registerCommands(pi: ExtensionAPI, onInstall: (path: string) => 
 				execFileSync(crwlLocal, ["--help"], { stdio: "pipe" });
 				execFileSync(trafilaturaLocal, ["--version"], { stdio: "pipe" });
 				onInstall(crwlLocal);
-				ctx.ui.notify("[crawl4ai] Crawl4AI + Trafilatura installed successfully!", "success");
+				const customHint = scopeLabel === "custom"
+					? `\nFor future sessions set CRAWL4AI_VENV=${venvDir} and TRAFILATURA_VENV=${trafilaturaVenvDir}.`
+					: "";
+				ctx.ui.notify(
+					`[crawl4ai] Crawl4AI + Trafilatura installed successfully in ${scopeLabel} scope.\nLocation: ${installRoot}${customHint}`,
+					"success",
+				);
 			} catch (err: any) {
 				ctx.ui.notify(`[crawl4ai] Smoke test failed: ${err.message}`, "error");
 			}

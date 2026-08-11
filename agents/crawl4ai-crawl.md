@@ -15,6 +15,6 @@ Deep-crawl live sites with `crawl4ai` Markdown output.
 - Use `markdown-fit` when smaller output is preferred.
 - Use cache unless freshness requires `bypass_cache: true`.
 
-Do not use Trafilatura, JSON output, or structured extraction: those are single-page workflows. Read the saved artifact and never guess content.
+Do not use Trafilatura, BM25 filtering, JSON output, or structured extraction: those are single-page workflows. Read the saved artifact and never guess content.
 
 Return the start URL, strategy, page count, artifact path, pages found, and concise cross-page findings. Reduce `max_pages` or raise `timeout` when needed.

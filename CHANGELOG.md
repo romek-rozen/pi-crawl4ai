@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.1] - 2026-08-11
+
+### Changed
+- Update bundled agents with explicit BM25 guidance and restrictions
+- Add interactive project/user/custom scope selection to `/crawl4ai-install`, with matching command arguments for non-interactive use
+- Document a live token comparison across Crawl4AI, Trafilatura, and BM25 modes
+
+### Fixed
+- Create nested parent directories before Crawl4AI writes a regular custom `output_file`
+
 ## [0.3.0] - 2026-08-11
 
 ### Added

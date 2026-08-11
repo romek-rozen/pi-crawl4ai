@@ -3,6 +3,7 @@
 [![npm](https://img.shields.io/npm/v/pi-crawl4ai)](https://www.npmjs.com/package/pi-crawl4ai)
 [![GitHub](https://img.shields.io/github/license/romek-rozen/pi-crawl4ai)](https://github.com/romek-rozen/pi-crawl4ai)
 [![Built with Crawl4AI](https://img.shields.io/badge/Built%20with-Crawl4AI-blue)](https://github.com/unclecode/crawl4ai)
+[![Built with Trafilatura](https://img.shields.io/badge/Built%20with-Trafilatura-orange)](https://github.com/adbar/trafilatura)
 [![Built for pi](https://img.shields.io/badge/Built%20for-pi-green)](https://github.com/earendil-works/pi)
 
 A production-ready [pi](https://github.com/earendil-works/pi) package that integrates [Crawl4AI](https://github.com/unclecode/crawl4ai) with optional [Trafilatura](https://trafilatura.readthedocs.io/) extraction for compact, token-efficient web content.
@@ -32,7 +33,7 @@ pi install git:github.com/romek-rozen/pi-crawl4ai
    ```
    /crawl4ai-install
    ```
-   This creates isolated Python environments and installs both `crawl4ai` and `trafilatura` locally. They are isolated to avoid incompatible `lxml` requirements.
+   Choose an installation scope in the dialog: **Project** (current repository), **User** (shared by all projects), or **Custom** directory. Crawl4AI and Trafilatura use isolated Python environments to avoid incompatible `lxml` requirements. Non-interactive forms are `/crawl4ai-install project`, `/crawl4ai-install user`, and `/crawl4ai-install /custom/directory`.
 
 2. **Verify**:
    ```
@@ -124,7 +125,7 @@ Use a chain: first have crawl4ai-scrape get the page at https://shop.example.com
 
 | Command | Purpose |
 |---------|---------|
-| `/crawl4ai-install` | Create isolated local venvs and install Crawl4AI + Trafilatura |
+| `/crawl4ai-install [scope]` | Install/update isolated Crawl4AI + Trafilatura venvs; choose `project`, `user`, or a custom directory |
 | `/crawl4ai-test` | Run a smoke test crawl on example.com |
 | `/crawl4ai-status` | Show binary path and health check; keep a compact status in the footer |
 | `/crawl4ai-clear-cache` | Remove local `.crawl4ai/cache` and `.crawl4ai/robots` |
@@ -230,6 +231,23 @@ Add `bm25_query` to filter either regular Crawl4AI Markdown or the result of Tra
 
 The filtered artifact is still saved under `.crawl4ai/outputs/`, and the inline response remains path-only. A high threshold may intentionally produce an empty artifact. BM25 currently supports single-page Markdown/text and cannot be combined with deep crawling, questions, or structured JSON extraction.
 
+### Live token comparison
+
+Measured on 2026-08-11 against [`https://pi.dev/docs/latest`](https://pi.dev/docs/latest). Token counts use `tiktoken` 0.13.0 with the `o200k_base` encoding. Reduction is relative to unfiltered Crawl4AI Markdown. BM25 runs used query `extensions custom tools ExtensionAPI registerTool` and threshold `1.0`.
+
+| Mode | Lines | Words | Tokens | Token reduction |
+|---|---:|---:|---:|---:|
+| Crawl4AI Markdown | 152 | 622 | 2,681 | baseline |
+| Crawl4AI `markdown-fit` | 82 | 441 | 1,046 | 61.0% |
+| Crawl4AI Markdown + BM25 | 111 | 438 | 2,069 | 22.8% |
+| Trafilatura Markdown | 93 | 361 | 808 | 69.9% |
+| Trafilatura plain text | 53 | 405 | 599 | 77.7% |
+| Trafilatura Markdown + BM25 | 21 | 143 | 307 | **88.5%** |
+
+A separate bounded BFS deep-crawl (`max_pages: 2`, `markdown-fit`) produced 165 lines, 1,208 words, and 2,927 tokens. It is not included in the reduction ranking because it covers multiple pages. Question mode reached the expected Crawl4AI provider check but could not complete in this environment because no default LLM provider was configured. JSON-without-extraction and Trafilatura-with-deep-crawl validation correctly rejected those unsupported requests before crawling.
+
+For this page and query, Trafilatura followed by BM25 produced the smallest focused Markdown artifact while retaining structural context. Results can change as the live page changes; token counts also depend on the tokenizer used by the active model.
+
 ## JSON extraction requirements
 
 `output_format=json` **requires** an extraction strategy:
@@ -264,7 +282,8 @@ The extension runs inside pi’s extension loader. After modifying source, reloa
 
 ## Troubleshooting
 
-- **"Binary not found"** → the extension automatically checks project-local and `~/.pi/extensions/crawl4ai/.venv` installations; otherwise run `/crawl4ai-install` or set `CRAWL4AI_VENV=/path/to/venv`
+- **"Binary not found"** → the extension automatically checks project-local and `~/.pi/extensions/crawl4ai/.venv` installations; otherwise run `/crawl4ai-install` and choose a scope, or set `CRAWL4AI_VENV=/path/to/venv`
+- **Custom install not detected after restart** → set `CRAWL4AI_VENV=<custom-root>/.venv` and `TRAFILATURA_VENV=<custom-root>/.trafilatura-venv` before starting pi
 - **"Trafilatura is not installed"** → run `/crawl4ai-install` or set `TRAFILATURA_VENV=/path/to/venv`; raw HTML is still preserved when extraction cannot start
 - **"No default LLM provider configured"** → configure a provider in Crawl4AI before using `json_extract`
 - **"the JSON object must be str, bytes or bytearray, not NoneType"** → usually missing `extraction_config` when using `schema_path`, or the page has no matching content

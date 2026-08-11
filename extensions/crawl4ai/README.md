@@ -8,7 +8,7 @@ Integrates [Crawl4AI](https://github.com/unclecode/crawl4ai) with optional [Traf
    ```
    /crawl4ai-install
    ```
-   This creates `.pi/extensions/crawl4ai/.venv` for Crawl4AI and a separate `.trafilatura-venv` for Trafilatura. Isolation avoids conflicting Python dependencies.
+   Choose **Project**, **User**, or **Custom** installation scope. Project installs under `.pi/extensions/crawl4ai/`; user installs under `~/.pi/extensions/crawl4ai/`; custom installs use the selected root. Crawl4AI and Trafilatura receive separate venvs to avoid conflicting Python dependencies. For non-interactive use, pass `project`, `user`, or a directory after the command.
    The crawler uses the project-local `.crawl4ai/` folder by default (via `CRAWL4_AI_BASE_DIRECTORY`).
 
 2. **Verify**:
@@ -66,7 +66,7 @@ The LLM sees a tool named `crawl4ai` with these parameters:
 
 | Command | Purpose |
 |---------|---------|
-| `/crawl4ai-install` | Create isolated venvs and install Crawl4AI + Trafilatura |
+| `/crawl4ai-install [scope]` | Install/update isolated venvs in project, user, or custom scope |
 | `/crawl4ai-test` | Run a smoke test crawl on example.com |
 | `/crawl4ai-status` | Show binary path and health check; keep a compact status in the footer |
 | `/crawl4ai-clear-cache` | Remove local `.crawl4ai/cache` and `.crawl4ai/robots` |

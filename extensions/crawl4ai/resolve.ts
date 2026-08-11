@@ -53,6 +53,8 @@ export function findTrafilatura(cwd: string, crwlPath?: string): string | null {
 		join(cwd, ".pi", "extensions", "crawl4ai", ".trafilatura-venv", "bin", "trafilatura"),
 		join(homedir(), ".pi", "extensions", "crawl4ai", ".trafilatura-venv", "bin", "trafilatura"),
 		join(homedir(), ".pi", "agent", "extensions", "crawl4ai", ".trafilatura-venv", "bin", "trafilatura"),
+		// Custom managed root: <root>/.venv/bin/crwl + <root>/.trafilatura-venv/bin/trafilatura.
+		crwlPath ? join(dirname(dirname(dirname(crwlPath))), ".trafilatura-venv", "bin", "trafilatura") : null,
 		crwlPath ? join(dirname(crwlPath), "trafilatura") : null,
 	];
 	for (const candidate of candidates) {
