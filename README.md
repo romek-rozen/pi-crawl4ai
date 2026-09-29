@@ -125,7 +125,7 @@ Use a chain: first have crawl4ai-scrape get the page at https://shop.example.com
 
 | Command | Purpose |
 |---------|---------|
-| `/crawl4ai-install [scope]` | Install/update isolated Crawl4AI + Trafilatura venvs; choose `project`, `user`, or a custom directory |
+| `/crawl4ai-install [scope]` | Install/update isolated Crawl4AI (>=0.9.4) + Trafilatura (>=2.2.0) venvs; choose `project`, `user`, or a custom directory |
 | `/crawl4ai-test` | Run a smoke test crawl on example.com |
 | `/crawl4ai-status` | Show binary path and health check; keep a compact status in the footer |
 | `/crawl4ai-clear-cache` | Remove local `.crawl4ai/cache` and `.crawl4ai/robots` |

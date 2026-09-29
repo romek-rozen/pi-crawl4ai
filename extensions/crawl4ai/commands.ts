@@ -85,7 +85,7 @@ export function registerCommands(pi: ExtensionAPI, onInstall: (path: string) => 
 			ctx.ui.notify("[crawl4ai] Installing crawl4ai (this may take a minute)…", "info");
 			try {
 				const pip = join(venvDir, "bin", "pip");
-				execFileSync(pip, ["install", "-U", "crawl4ai"], { stdio: "inherit" });
+				execFileSync(pip, ["install", "-U", "crawl4ai>=0.9.4"], { stdio: "inherit" });
 			} catch (err: any) {
 				ctx.ui.notify(`[crawl4ai] pip install failed: ${err.message}`, "error");
 				return;
@@ -98,7 +98,7 @@ export function registerCommands(pi: ExtensionAPI, onInstall: (path: string) => 
 			try {
 				execFileSync(python, ["-m", "venv", trafilaturaVenvDir], { stdio: "inherit" });
 				const trafilaturaPip = join(trafilaturaVenvDir, "bin", "pip");
-				execFileSync(trafilaturaPip, ["install", "-U", "trafilatura"], { stdio: "inherit" });
+				execFileSync(trafilaturaPip, ["install", "-U", "trafilatura>=2.2.0"], { stdio: "inherit" });
 			} catch (err: any) {
 				ctx.ui.notify(`[crawl4ai] Trafilatura install failed: ${err.message}`, "error");
 				return;

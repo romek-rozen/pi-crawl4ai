@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.2] - 2026-09-29
+
+### Changed
+- `/crawl4ai-install` now requires Crawl4AI `>=0.9.4` (security fixes, faster lxml pruning filter) and Trafilatura `>=2.2.0` (better recall and Markdown output); rerun it to upgrade existing venvs
+
 ## [0.3.1] - 2026-08-11
 
 ### Changed
